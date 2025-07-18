@@ -1,7 +1,9 @@
+// frontend/src/screens/HomeScreen.tsx
 import React, { useState } from "react";
 import { View, Text, FlatList, Pressable, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { format, subDays, addDays, isToday } from "date-fns";
+import { useAuth } from "../contexts/AuthContext";
 
 const mockHabits = [
   { id: "1", name: "Pray Fajr", completed: false },
@@ -12,6 +14,8 @@ const mockHabits = [
 export default function Home() {
   const [date, setDate] = useState(new Date());
   const [habits, setHabits] = useState(mockHabits);
+
+  const { isLoggedIn, token } = useAuth();
 
   const handleToggleHabit = (id: string) => {
     setHabits((prev) =>
@@ -26,6 +30,14 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
+      <Text style={{ marginBottom: 10 }}>
+        {isLoggedIn ? "Logged in ✅" : "Not logged in ❌"}
+      </Text>
+      {token && (
+        <Text numberOfLines={1} style={{ fontSize: 12 }}>
+          Token: {token.slice(0, 25)}...
+        </Text>
+      )}
       {/* Date Navigation */}
       <View style={styles.navbar}>
         <Pressable onPress={goToPrevDay}>

@@ -16,7 +16,6 @@ habits_bp = Blueprint("habits", __name__)
 def test():
     return {"message": "Habits route works!"}
 
-@habits_bp.route("", methods=["POST"])
 @habits_bp.route("/", methods=["POST"])
 @jwt_required()
 def create_habit():
