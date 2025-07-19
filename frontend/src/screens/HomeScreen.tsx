@@ -1,26 +1,63 @@
 // frontend/src/screens/HomeScreen.tsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, Pressable, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { format, subDays, addDays, isToday } from "date-fns";
 import { useAuth } from "../contexts/AuthContext";
-
-const mockHabits = [
-  { id: "1", name: "Pray Fajr", completed: false },
-  { id: "2", name: "Read Qur’an", completed: true },
-  { id: "3", name: "Workout", completed: false },
-];
+import api, {
+  getHabits,
+  getHabitLogs,
+  logHabit,
+  undoHabit,
+  Habit,
+} from "../../lib/api";
 
 export default function Home() {
   const [date, setDate] = useState(new Date());
-  const [habits, setHabits] = useState(mockHabits);
+  const [habits, setHabits] = useState<Habit[]>([]);
 
   const { isLoggedIn, token } = useAuth();
 
-  const handleToggleHabit = (id: string) => {
-    setHabits((prev) =>
-      prev.map((h) => (h.id === id ? { ...h, completed: !h.completed } : h))
-    );
+  useEffect(() => {
+    if (!isLoggedIn || !token) return;
+
+    const loadHabits = async () => {
+      try {
+        const habits = await getHabits();
+        const logs = await getHabitLogs(format(date, "yyyy-MM")); // e.g. 2025-07
+
+        const completedToday =
+          logs[format(date, "yyyy-MM-dd")]?.map((log) => log.id) || [];
+
+        const mergedHabits = habits.map((habit) => ({
+          ...habit,
+          completed: completedToday.includes(habit.id),
+        }));
+
+        setHabits(mergedHabits);
+      } catch (err) {
+        console.error("Failed to load habits:", err);
+      }
+    };
+
+    loadHabits();
+  }, [isLoggedIn, date]);
+
+  // Maybe add a delay to avoid too many requests
+  const handleToggleHabit = async (id: number, completed = false) => {
+    try {
+      if (completed) {
+        await undoHabit(id, format(date, "yyyy-MM-dd"));
+      } else {
+        await logHabit(id, format(date, "yyyy-MM-dd"));
+      }
+
+      setHabits((prev) =>
+        prev.map((h) => (h.id === id ? { ...h, completed: !h.completed } : h))
+      );
+    } catch (err) {
+      console.error("Failed to toggle habit:", err);
+    }
   };
 
   const goToPrevDay = () => setDate(subDays(date, 1));
@@ -57,11 +94,11 @@ export default function Home() {
       <View style={styles.habitContainer}>
         <FlatList
           data={habits}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
             <Pressable
               style={[styles.habit, item.completed && styles.completedHabit]}
-              onPress={() => handleToggleHabit(item.id)}
+              onPress={() => handleToggleHabit(item.id, item.completed)}
             >
               <Text style={styles.habitText}>
                 {item.completed ? "✅" : "⬜️"} {item.name}
