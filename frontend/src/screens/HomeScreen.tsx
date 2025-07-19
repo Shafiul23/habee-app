@@ -11,37 +11,45 @@ import api, {
   undoHabit,
   Habit,
 } from "../../lib/api";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../../types";
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Main">;
 
 export default function Home() {
   const [date, setDate] = useState(new Date());
   const [habits, setHabits] = useState<Habit[]>([]);
 
   const { isLoggedIn, token } = useAuth();
+  const navigation = useNavigation<NavigationProp>();
 
-  useEffect(() => {
-    if (!isLoggedIn || !token) return;
+  useFocusEffect(
+    React.useCallback(() => {
+      const loadHabits = async () => {
+        try {
+          const habits = await getHabits();
+          const logs = await getHabitLogs(format(date, "yyyy-MM")); // e.g. 2025-07
 
-    const loadHabits = async () => {
-      try {
-        const habits = await getHabits();
-        const logs = await getHabitLogs(format(date, "yyyy-MM")); // e.g. 2025-07
+          const completedToday =
+            logs[format(date, "yyyy-MM-dd")]?.map((log) => log.id) || [];
 
-        const completedToday =
-          logs[format(date, "yyyy-MM-dd")]?.map((log) => log.id) || [];
+          const mergedHabits = habits
+            .filter((habit) => new Date(habit.start_date) <= date)
+            .map((habit) => ({
+              ...habit,
+              completed: completedToday.includes(habit.id),
+            }));
 
-        const mergedHabits = habits.map((habit) => ({
-          ...habit,
-          completed: completedToday.includes(habit.id),
-        }));
+          setHabits(mergedHabits);
+        } catch (err) {
+          console.error("Failed to load habits:", err);
+        }
+      };
 
-        setHabits(mergedHabits);
-      } catch (err) {
-        console.error("Failed to load habits:", err);
-      }
-    };
-
-    loadHabits();
-  }, [isLoggedIn, date]);
+      loadHabits();
+    }, [isLoggedIn, date])
+  );
 
   // Maybe add a delay to avoid too many requests
   const handleToggleHabit = async (id: number, completed = false) => {
@@ -67,14 +75,14 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
-      <Text style={{ marginBottom: 10 }}>
+      {/* <Text style={{ marginBottom: 10 }}>
         {isLoggedIn ? "Logged in ✅" : "Not logged in ❌"}
       </Text>
       {token && (
         <Text numberOfLines={1} style={{ fontSize: 12 }}>
           Token: {token.slice(0, 25)}...
         </Text>
-      )}
+      )} */}
       {/* Date Navigation */}
       <View style={styles.navbar}>
         <Pressable onPress={goToPrevDay}>
@@ -107,6 +115,12 @@ export default function Home() {
           )}
         />
       </View>
+      <Pressable
+        style={styles.fab}
+        onPress={() => navigation.navigate("CreateHabit")}
+      >
+        <Ionicons name="create-outline" size={28} color="white" />
+      </Pressable>
     </View>
   );
 }
@@ -150,5 +164,18 @@ const styles = StyleSheet.create({
   },
   habitText: {
     fontSize: 16,
+  },
+  fab: {
+    position: "absolute",
+    bottom: 30,
+    right: 20,
+    backgroundColor: "#4CAF50", // or whatever theme color
+    padding: 16,
+    borderRadius: 30,
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
   },
 });

@@ -53,7 +53,7 @@ def list_habits():
     habits = Habit.query.filter_by(user_id=user_id).all()
 
     return jsonify([
-        {"id": h.id, "name": h.name} for h in habits
+        {"id": h.id, "name": h.name, "start_date": h.start_date.isoformat()} for h in habits
     ])
 
 

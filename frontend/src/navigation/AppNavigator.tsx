@@ -5,8 +5,10 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useAuth } from "../contexts/AuthContext";
 import LoginScreen from "../screens/LoginScreen";
 import MainNavigator from "./MainNavigator";
+import CreateHabitScreen from "../screens/CreateHabitScreen";
+import { RootStackParamList } from "../../types";
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function AppNavigator() {
   const { isLoggedIn } = useAuth();
@@ -15,7 +17,14 @@ export default function AppNavigator() {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {isLoggedIn ? (
-          <Stack.Screen name="Main" component={MainNavigator} />
+          <>
+            <Stack.Screen name="Main" component={MainNavigator} />
+            <Stack.Screen
+              name="CreateHabit"
+              component={CreateHabitScreen}
+              options={{ presentation: "modal" }}
+            />
+          </>
         ) : (
           <Stack.Screen name="Login" component={LoginScreen} />
         )}
