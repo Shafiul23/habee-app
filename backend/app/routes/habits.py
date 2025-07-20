@@ -174,78 +174,78 @@ def daily_summary():
     return jsonify(summary)
 
 
-# @habits_bp.route("/calendar-summary", methods=["GET"])
-# @jwt_required()
-# def calendar_summary():
-#     user_id = get_jwt_identity()
-#     month_str = request.args.get("month")
+@habits_bp.route("/calendar-summary", methods=["GET"])
+@jwt_required()
+def calendar_summary():
+    user_id = get_jwt_identity()
+    month_str = request.args.get("month")
 
-#     if not month_str:
-#         return {"error": "Month query param is required. Format: YYYY-MM"}, 400
+    if not month_str:
+        return {"error": "Month query param is required. Format: YYYY-MM"}, 400
 
-#     try:
-#         month_start = datetime.strptime(month_str, "%Y-%m").date()
-#     except ValueError:
-#         return {"error": "Invalid month format. Use YYYY-MM"}, 400
+    try:
+        month_start = datetime.strptime(month_str, "%Y-%m").date()
+    except ValueError:
+        return {"error": "Invalid month format. Use YYYY-MM"}, 400
 
-#     # Generate all days in the month
-#     from calendar import monthrange
-#     _, last_day = monthrange(month_start.year, month_start.month)
-#     month_days = [month_start.replace(day=day) for day in range(1, last_day + 1)]
+    # Generate all days in the month
+    from calendar import monthrange
+    _, last_day = monthrange(month_start.year, month_start.month)
+    month_days = [month_start.replace(day=day) for day in range(1, last_day + 1)]
 
-#     # Get user's habits
-#     habits = Habit.query.filter_by(user_id=user_id).all()
-#     if not habits:
-#         return jsonify({})  # No habits for user
+    # Get user's habits
+    habits = Habit.query.filter_by(user_id=user_id).all()
+    if not habits:
+        return jsonify({})  # No habits for user
 
-#     habit_dict = {h.id: h for h in habits}
-#     habit_ids = list(habit_dict.keys())
+    habit_dict = {h.id: h for h in habits}
+    habit_ids = list(habit_dict.keys())
 
-#     # Get logs for habits during this month
-#     month_end = (month_start.replace(day=28) + timedelta(days=4)).replace(day=1)
-#     logs = HabitLog.query.filter(
-#         HabitLog.habit_id.in_(habit_ids),
-#         HabitLog.date >= month_start,
-#         HabitLog.date < month_end
-#     ).all()
+    # Get logs for habits during this month
+    month_end = (month_start.replace(day=28) + timedelta(days=4)).replace(day=1)
+    logs = HabitLog.query.filter(
+        HabitLog.habit_id.in_(habit_ids),
+        HabitLog.date >= month_start,
+        HabitLog.date < month_end
+    ).all()
 
-#     # Organize logs by date
-#     logs_by_date = defaultdict(list)
-#     for log in logs:
-#         logs_by_date[log.date].append(log.habit_id)
+    # Organize logs by date
+    logs_by_date = defaultdict(list)
+    for log in logs:
+        logs_by_date[log.date].append(log.habit_id)
 
-#     today = date.today()
-#     summary = {}
+    today = date.today()
+    summary = {}
 
-#     for day in month_days:
-#         if day > today:
-#             summary[day.isoformat()] = { "status": "future" }
-#             continue
+    for day in month_days:
+        if day > today:
+            summary[day.isoformat()] = { "status": "future" }
+            continue
 
-#         # Get habits active on that day
-#         active_habits = [h for h in habits if h.start_date <= day]
-#         total = len(active_habits)
+        # Get habits active on that day
+        active_habits = [h for h in habits if h.start_date <= day]
+        total = len(active_habits)
 
-#         if total == 0:
-#             summary[day.isoformat()] = { "status": "inactive" }
-#             continue
+        if total == 0:
+            summary[day.isoformat()] = { "status": "inactive" }
+            continue
 
-#         completed = logs_by_date.get(day, [])
-#         done = len(set(completed))
+        completed = logs_by_date.get(day, [])
+        done = len(set(completed))
 
-#         if done == 0:
-#             status = "incomplete"
-#         elif done == total:
-#             status = "complete"
-#         else:
-#             status = "partial"
+        if done == 0:
+            status = "incomplete"
+        elif done == total:
+            status = "complete"
+        else:
+            status = "partial"
 
-#         summary[day.isoformat()] = {
-#             "status": status,
-#             "completed": done,
-#             "total": total
-#         }
+        summary[day.isoformat()] = {
+            "status": status,
+            "completed": done,
+            "total": total
+        }
 
-#     return jsonify(summary)
+    return jsonify(summary)
 
 

@@ -26,13 +26,13 @@ export type Habit = {
   completed?: boolean;
 };
 
-// export type CalendarSummary = {
-//   [date: string]: {
-//     status: "inactive" | "incomplete" | "partial" | "complete" | "future";
-//     completed?: number;
-//     total?: number;
-//   };
-// };
+export type CalendarSummary = {
+  [date: string]: {
+    status: "inactive" | "incomplete" | "partial" | "complete" | "future";
+    completed?: number;
+    total?: number;
+  };
+};
 
 // API Calls
 export const getHabits = async (): Promise<Habit[]> => {
@@ -45,12 +45,12 @@ export const getHabitSummary = async (date: string): Promise<Habit[]> => {
   return res.data;
 };
 
-// export const getCalendarSummary = async (
-//   month: string
-// ): Promise<CalendarSummary> => {
-//   const res = await api.get(`/habits/calendar-summary?month=${month}`);
-//   return res.data;
-// };
+export const getCalendarSummary = async (
+  month: string
+): Promise<CalendarSummary> => {
+  const res = await api.get(`/habits/calendar-summary?month=${month}`);
+  return res.data;
+};
 
 export const logHabit = async (habitId: number, date: string) => {
   await api.post(`/habits/${habitId}/log`);
