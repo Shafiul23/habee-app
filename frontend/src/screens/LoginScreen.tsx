@@ -3,15 +3,14 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from "react-native";
 import api from "../../lib/api";
-import { useAuth } from "../contexts/AuthContext";
 import PrimaryButton from "../components/PrimaryButton";
+import { useAuth } from "../contexts/AuthContext";
 
 const LoginScreen = () => {
   const [email, setEmail] = useState("");

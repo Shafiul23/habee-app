@@ -1,13 +1,13 @@
 // frontend / screens / CalendarScreen.tsx;
+import { addMonths, format, subMonths } from "date-fns";
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet } from "react-native";
-import { Calendar } from "react-native-calendars";
-import { format, addMonths, subMonths } from "date-fns";
-import MonthHeader from "../components/MonthHeader";
+import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 import { CalendarSummary, getCalendarSummary } from "../../lib/api";
 import CalendarGrid from "../components/CalendarGrid";
+import MonthHeader from "../components/MonthHeader";
 
 export default function CalendarScreen() {
+  const [viewMode, setViewMode] = useState<"month" | "week">("month");
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [calendarData, setCalendarData] = useState<CalendarSummary>({});
 
@@ -33,6 +33,17 @@ export default function CalendarScreen() {
     setSelectedMonth((prev) => addMonths(prev, 1));
   };
 
+  const [underlineAnim] = useState(new Animated.Value(0)); // 0 for left, 1 for right
+
+  const switchView = (mode: "month" | "week") => {
+    setViewMode(mode);
+    Animated.timing(underlineAnim, {
+      toValue: mode === "month" ? 0 : 1,
+      duration: 200,
+      useNativeDriver: false,
+    }).start();
+  };
+
   return (
     <View style={styles.container}>
       <MonthHeader
@@ -41,7 +52,36 @@ export default function CalendarScreen() {
         onNext={handleNextMonth}
       />
 
-      <CalendarGrid month={selectedMonth} summary={calendarData} />
+      <View style={styles.toggleWrapper}>
+        <View style={styles.toggleContainer}>
+          <Pressable
+            style={[styles.tabButton, viewMode === "month" && styles.underline]}
+            onPress={() => switchView("month")}
+          >
+            <Text
+              style={[styles.tabText, viewMode === "month" && styles.tabActive]}
+            >
+              Month View
+            </Text>
+          </Pressable>
+          <Pressable
+            style={[styles.tabButton, viewMode === "week" && styles.underline]}
+            onPress={() => switchView("week")}
+          >
+            <Text
+              style={[styles.tabText, viewMode === "week" && styles.tabActive]}
+            >
+              Week View
+            </Text>
+          </Pressable>
+        </View>
+      </View>
+
+      {viewMode === "month" ? (
+        <CalendarGrid month={selectedMonth} summary={calendarData} />
+      ) : (
+        <Text>Habit Grid coming soon...</Text> // placeholder for now
+      )}
     </View>
   );
 }
@@ -51,14 +91,30 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
   },
-  calendar: {
-    marginTop: 10,
-    borderRadius: 12,
-    marginHorizontal: 20,
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+  toggleWrapper: {
+    marginTop: 20,
+    marginBottom: 10,
+    paddingHorizontal: 10,
+    position: "relative",
+  },
+  toggleContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 40,
+  },
+  tabButton: {
+    alignItems: "center",
+    paddingVertical: 10,
+  },
+  tabText: {
+    fontSize: 16,
+    color: "#888",
+  },
+  tabActive: {
+    fontWeight: "bold",
+    color: "#000",
+  },
+  underline: {
+    borderBottomWidth: 2,
   },
 });
