@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import api from "../../lib/api";
 import { useAuth } from "../contexts/AuthContext";
+import PrimaryButton from "../components/PrimaryButton";
 
 const LoginScreen = () => {
   const [email, setEmail] = useState("");
@@ -52,7 +53,7 @@ const LoginScreen = () => {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <View style={styles.card}>
-        <Text style={styles.title}>Welcome Back 👋</Text>
+        <Text style={styles.title}>Azm</Text>
         <TextInput
           style={styles.input}
           placeholder="Email"
@@ -70,12 +71,8 @@ const LoginScreen = () => {
           onChangeText={setPassword}
           secureTextEntry
         />
-        <Pressable style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Log In</Text>
-        </Pressable>
-        <Pressable style={styles.button} onPress={handleDevLogin}>
-          <Text style={styles.buttonText}>Dev Login</Text>
-        </Pressable>
+        <PrimaryButton title="Log In" onPress={handleLogin} />
+        <PrimaryButton title="Dev Login" onPress={handleDevLogin} />
       </View>
     </KeyboardAvoidingView>
   );
@@ -84,14 +81,14 @@ const LoginScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0f172a",
+    backgroundColor: "#f9f9f9",
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
   },
   card: {
     width: "100%",
-    backgroundColor: "#1e293b",
+    backgroundColor: "#ffffff",
     borderRadius: 12,
     padding: 24,
     shadowColor: "#000",
@@ -99,7 +96,7 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
   },
   title: {
-    color: "#fff",
+    color: "#000",
     fontSize: 24,
     fontWeight: "600",
     marginBottom: 24,
@@ -107,24 +104,14 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 50,
-    backgroundColor: "#334155",
+    backgroundColor: "#f2f2f2",
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#dcdcdc",
     paddingHorizontal: 16,
-    color: "#fff",
+    color: "#000",
     marginBottom: 16,
     fontSize: 16,
-  },
-  button: {
-    backgroundColor: "#38bdf8",
-    paddingVertical: 14,
-    borderRadius: 8,
-    marginTop: 8,
-  },
-  buttonText: {
-    color: "#0f172a",
-    fontWeight: "600",
-    fontSize: 16,
-    textAlign: "center",
   },
 });
 

@@ -1,27 +1,30 @@
 // frontend/src/screens/HomeScreen.tsx
-import React, { useEffect, useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { addDays, format, isToday, subDays } from "date-fns";
+import React, { useState } from "react";
 import {
-  View,
-  Text,
+  Alert,
   FlatList,
   Pressable,
   StyleSheet,
-  Alert,
+  Text,
+  View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { format, subDays, addDays, isToday } from "date-fns";
-import { useAuth } from "../contexts/AuthContext";
-import api, {
-  getHabits,
-  getHabitLogs,
-  logHabit,
-  undoHabit,
+import {
   Habit,
   deleteHabit,
+  getHabitLogs,
+  getHabits,
+  logHabit,
+  undoHabit,
 } from "../../lib/api";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../types";
+import HabitItem from "../components/HabitItem";
+import { useAuth } from "../contexts/AuthContext";
+import DateHeader from "../components/DateHeader";
+import PrimaryButton from "../components/PrimaryButton";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Main">;
 
@@ -30,7 +33,7 @@ export default function Home() {
   const [habits, setHabits] = useState<Habit[]>([]);
   const [showHabitMenu, setShowHabitMenu] = useState<number | null>(null);
 
-  const { isLoggedIn, token } = useAuth();
+  const { isLoggedIn } = useAuth();
   const navigation = useNavigation<NavigationProp>();
 
   useFocusEffect(
@@ -38,7 +41,7 @@ export default function Home() {
       const loadHabits = async () => {
         try {
           const habits = await getHabits();
-          const logs = await getHabitLogs(format(date, "yyyy-MM")); // e.g. 2025-07
+          const logs = await getHabitLogs(format(date, "yyyy-MM"));
 
           const completedToday =
             logs[format(date, "yyyy-MM-dd")]?.map((log) => log.id) || [];
@@ -60,7 +63,6 @@ export default function Home() {
     }, [isLoggedIn, date])
   );
 
-  // Maybe add a delay to avoid too many requests
   const handleToggleHabit = async (id: number, completed = false) => {
     try {
       if (completed) {
@@ -106,125 +108,86 @@ export default function Home() {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Date Navigation */}
-      <View style={styles.navbar}>
-        <Pressable onPress={goToPrevDay}>
-          <Ionicons name="chevron-back" size={24} />
-        </Pressable>
-        <Text style={styles.dateText}>{format(date, "d MMMM yyyy")}</Text>
-        <Pressable onPress={goToNextDay} disabled={isToday(date)}>
-          <Ionicons
-            name="chevron-forward"
-            size={24}
-            color={isToday(date) ? "gray" : "black"}
-          />
-        </Pressable>
-      </View>
+    <>
+      <DateHeader date={date} onPrev={goToPrevDay} onNext={goToNextDay} />
 
-      {/* Habit List Container */}
-      <View style={styles.habitContainer}>
+      <View style={styles.container}>
         <FlatList
           data={habits}
           keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={{ paddingBottom: 100 }}
+          ListHeaderComponent={
+            <Text style={styles.objectivesTitle}>
+              {format(date, "EEEE")} Habits
+            </Text>
+          }
           renderItem={({ item }) => (
-            <Pressable
-              style={[styles.habit, item.completed && styles.completedHabit]}
-              onPress={() => handleToggleHabit(item.id, item.completed)}
-            >
-              <Text style={styles.habitText}>
-                {item.completed ? "✅" : "⬜️"} {item.name}
-              </Text>
-              <Pressable onPress={() => setShowHabitMenu(item.id)}>
-                <Ionicons name="ellipsis-vertical" size={20} />
-              </Pressable>
-            </Pressable>
+            <HabitItem
+              item={item}
+              onToggle={() => handleToggleHabit(item.id, item.completed)}
+              onShowMenu={() => setShowHabitMenu(item.id)}
+            />
           )}
         />
-      </View>
-      <Pressable
-        style={styles.fab}
-        onPress={() => navigation.navigate("CreateHabit")}
-      >
-        <Ionicons name="create-outline" size={28} color="white" />
-      </Pressable>
 
-      {/* Habit Options Menu */}
-      {showHabitMenu !== null && (
         <Pressable
-          style={styles.modalOverlay}
-          onPress={() => setShowHabitMenu(null)}
+          style={styles.fab}
+          onPress={() => navigation.navigate("CreateHabit")}
         >
-          <Pressable onPress={() => {}} style={styles.menuBox}>
-            <Pressable
-              onPress={() => {
-                Alert.alert("Edit feature not implemented yet.");
-                setShowHabitMenu(null);
-              }}
-              style={styles.menuButton}
-            >
-              <Text style={styles.menuEditText}>Edit Habit</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => handleDeleteHabit(showHabitMenu)}
-              style={styles.menuButton}
-            >
-              <Text style={styles.menuDeleteText}>Delete Habit</Text>
+          <Ionicons name="create-outline" size={32} color="black" />
+        </Pressable>
+
+        {showHabitMenu !== null && (
+          <Pressable
+            style={styles.modalOverlay}
+            onPress={() => setShowHabitMenu(null)}
+          >
+            <Pressable onPress={() => {}} style={styles.menuBox}>
+              <PrimaryButton
+                title="Edit Habit"
+                onPress={() => {
+                  Alert.alert("Edit feature not implemented yet.");
+                  setShowHabitMenu(null);
+                }}
+              />
+              <PrimaryButton
+                title="Delete Habit"
+                onPress={() => handleDeleteHabit(showHabitMenu)}
+                style={{
+                  backgroundColor: "#fff",
+                  borderWidth: 1,
+                  borderColor: "#e0e0e0",
+                }}
+                textStyle={{ color: "red" }}
+              />
             </Pressable>
           </Pressable>
-        </Pressable>
-      )}
-    </View>
+        )}
+      </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 80,
+    paddingTop: 20,
     paddingHorizontal: 20,
     backgroundColor: "#fff",
   },
-  navbar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+  objectivesTitle: {
+    fontSize: 24,
+    textAlign: "center",
+    fontWeight: "700",
     marginBottom: 30,
-  },
-  dateText: {
-    fontSize: 18,
-    fontWeight: "600",
-  },
-  habitContainer: {
-    flex: 1,
-    backgroundColor: "#f9fafb", // subtle off-white / light gray
-    borderRadius: 20,
-    padding: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  habit: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    padding: 15,
-    borderRadius: 8,
-    backgroundColor: "#f0f0f0",
-    marginBottom: 10,
-  },
-  completedHabit: {
-    backgroundColor: "#c2f0c2",
-  },
-  habitText: {
-    fontSize: 16,
+    color: "#000",
+    backgroundColor: "fff",
   },
   fab: {
     position: "absolute",
     bottom: 30,
     right: 20,
-    backgroundColor: "#4CAF50", // or whatever theme color
+    backgroundColor: "#f7ce46",
     padding: 16,
     borderRadius: 30,
     elevation: 5,
@@ -253,33 +216,5 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
-  },
-
-  menuButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-    marginVertical: 6,
-    alignItems: "center",
-    backgroundColor: "#fff",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-
-  menuEditText: {
-    color: "#333",
-    fontWeight: "500",
-    fontSize: 16,
-  },
-
-  menuDeleteText: {
-    color: "red",
-    fontWeight: "600",
-    fontSize: 16,
   },
 });

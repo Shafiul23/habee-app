@@ -1,8 +1,9 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, Button, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { format } from "date-fns";
+import React, { useState } from "react";
+import { StyleSheet, Text, TextInput, View } from "react-native";
 import api from "../../lib/api";
+import PrimaryButton from "../components/PrimaryButton";
 
 export default function CreateHabitScreen() {
   const navigation = useNavigation();
@@ -25,27 +26,53 @@ export default function CreateHabitScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Habit Name</Text>
-      <TextInput
-        style={styles.input}
-        value={name}
-        onChangeText={setName}
-        placeholder="e.g. Read 30 mins, Track calories"
-      />
-
-      <Button title="Create Habit" onPress={handleCreateHabit} />
+      <View style={styles.card}>
+        <Text style={styles.label}>Habit Name</Text>
+        <TextInput
+          style={styles.input}
+          value={name}
+          onChangeText={setName}
+          placeholder="e.g. Read 30 mins, Track calories"
+          placeholderTextColor="#aaa"
+        />
+        <PrimaryButton title="Create habit" onPress={handleCreateHabit} />
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, paddingTop: 80 },
-  label: { marginBottom: 6, fontWeight: "600" },
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+    backgroundColor: "#f2f2f2",
+  },
+  card: {
+    width: "100%",
+    backgroundColor: "#fff",
+    padding: 24,
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 10,
+    color: "#000",
+  },
   input: {
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 8,
     padding: 12,
     marginBottom: 20,
+    fontSize: 16,
+    color: "#000",
   },
 });

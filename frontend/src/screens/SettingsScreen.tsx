@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { useAuth } from "../contexts/AuthContext";
+import PrimaryButton from "../components/PrimaryButton";
 
 export default function SettingsScreen() {
   const { logout } = useAuth();
@@ -16,9 +17,7 @@ export default function SettingsScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Settings</Text>
-      <Pressable style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutText}>Log Out</Text>
-      </Pressable>
+      <PrimaryButton title="Log Out" onPress={handleLogout} />
     </View>
   );
 }
@@ -26,7 +25,7 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0f172a",
+    backgroundColor: "#fff",
     paddingTop: 80,
     paddingHorizontal: 20,
     justifyContent: "flex-start",
@@ -34,19 +33,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "600",
-    color: "#fff",
+    color: "#000",
     marginBottom: 30,
-  },
-  logoutButton: {
-    backgroundColor: "#f87171", // Tailwind red-400
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 16,
-  },
-  logoutText: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 16,
   },
 });
