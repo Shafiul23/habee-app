@@ -45,6 +45,20 @@ def create_habit():
         }
     })
 
+@habits_bp.route("/<int:habit_id>", methods=["DELETE"])
+@jwt_required()
+def delete_habit(habit_id):
+    user_id = get_jwt_identity()
+    habit = Habit.query.filter_by(id=habit_id, user_id=user_id).first()
+
+    if not habit:
+        return jsonify({"error": "Habit not found"}), 404
+
+    db.session.delete(habit)
+    db.session.commit()
+
+    return jsonify({"message": "Habit deleted successfully"})
+
 
 @habits_bp.route("/", methods=["GET"])
 @jwt_required()

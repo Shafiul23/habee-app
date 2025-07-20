@@ -1,6 +1,13 @@
 // frontend/src/screens/HomeScreen.tsx
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, Pressable, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Alert,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { format, subDays, addDays, isToday } from "date-fns";
 import { useAuth } from "../contexts/AuthContext";
@@ -10,6 +17,7 @@ import api, {
   logHabit,
   undoHabit,
   Habit,
+  deleteHabit,
 } from "../../lib/api";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -20,6 +28,7 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Main">;
 export default function Home() {
   const [date, setDate] = useState(new Date());
   const [habits, setHabits] = useState<Habit[]>([]);
+  const [showHabitMenu, setShowHabitMenu] = useState<number | null>(null);
 
   const { isLoggedIn, token } = useAuth();
   const navigation = useNavigation<NavigationProp>();
@@ -73,16 +82,31 @@ export default function Home() {
     if (!isToday(date)) setDate(addDays(date, 1));
   };
 
+  const handleDeleteHabit = (habitId: number) => {
+    Alert.alert(
+      "Delete habit?",
+      "Are you sure you want to delete this habit? This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteHabit(habitId);
+              setHabits((prev) => prev.filter((h) => h.id !== habitId));
+              setShowHabitMenu(null);
+            } catch (err) {
+              console.error("Failed to delete habit:", err);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <View style={styles.container}>
-      {/* <Text style={{ marginBottom: 10 }}>
-        {isLoggedIn ? "Logged in ✅" : "Not logged in ❌"}
-      </Text>
-      {token && (
-        <Text numberOfLines={1} style={{ fontSize: 12 }}>
-          Token: {token.slice(0, 25)}...
-        </Text>
-      )} */}
       {/* Date Navigation */}
       <View style={styles.navbar}>
         <Pressable onPress={goToPrevDay}>
@@ -111,6 +135,9 @@ export default function Home() {
               <Text style={styles.habitText}>
                 {item.completed ? "✅" : "⬜️"} {item.name}
               </Text>
+              <Pressable onPress={() => setShowHabitMenu(item.id)}>
+                <Ionicons name="ellipsis-vertical" size={20} />
+              </Pressable>
             </Pressable>
           )}
         />
@@ -121,6 +148,32 @@ export default function Home() {
       >
         <Ionicons name="create-outline" size={28} color="white" />
       </Pressable>
+
+      {/* Habit Options Menu */}
+      {showHabitMenu !== null && (
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setShowHabitMenu(null)}
+        >
+          <Pressable onPress={() => {}} style={styles.menuBox}>
+            <Pressable
+              onPress={() => {
+                Alert.alert("Edit feature not implemented yet.");
+                setShowHabitMenu(null);
+              }}
+              style={styles.menuButton}
+            >
+              <Text style={styles.menuEditText}>Edit Habit</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => handleDeleteHabit(showHabitMenu)}
+              style={styles.menuButton}
+            >
+              <Text style={styles.menuDeleteText}>Delete Habit</Text>
+            </Pressable>
+          </Pressable>
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -154,6 +207,8 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   habit: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     padding: 15,
     borderRadius: 8,
     backgroundColor: "#f0f0f0",
@@ -177,5 +232,54 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 3,
+  },
+  modalOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  menuBox: {
+    backgroundColor: "white",
+    padding: 24,
+    borderRadius: 16,
+    width: 300,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+
+  menuButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    marginVertical: 6,
+    alignItems: "center",
+    backgroundColor: "#fff",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+
+  menuEditText: {
+    color: "#333",
+    fontWeight: "500",
+    fontSize: 16,
+  },
+
+  menuDeleteText: {
+    color: "red",
+    fontWeight: "600",
+    fontSize: 16,
   },
 });

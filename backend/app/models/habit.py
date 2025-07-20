@@ -7,4 +7,4 @@ class Habit(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     start_date = db.Column(db.Date, default=date.today) 
 
-    logs = db.relationship('HabitLog', backref='habit', lazy=True)
+    logs = db.relationship('HabitLog', backref='habit', lazy=True, cascade='all, delete-orphan')
