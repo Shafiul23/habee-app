@@ -26,14 +26,13 @@ export type Habit = {
   completed?: boolean;
 };
 
-export type HabitLog = {
-  habit_id: number;
-  date: string; // e.g. "2025-07-15"
-};
-
-export type CalendarLog = {
-  [date: string]: { id: number; name: string }[];
-};
+// export type CalendarSummary = {
+//   [date: string]: {
+//     status: "inactive" | "incomplete" | "partial" | "complete" | "future";
+//     completed?: number;
+//     total?: number;
+//   };
+// };
 
 // API Calls
 export const getHabits = async (): Promise<Habit[]> => {
@@ -41,10 +40,17 @@ export const getHabits = async (): Promise<Habit[]> => {
   return res.data;
 };
 
-export const getHabitLogs = async (month: string): Promise<CalendarLog> => {
-  const res = await api.get(`/habits/calendar?month=${month}`);
+export const getHabitSummary = async (date: string): Promise<Habit[]> => {
+  const res = await api.get(`/habits/daily-summary?date=${date}`);
   return res.data;
 };
+
+// export const getCalendarSummary = async (
+//   month: string
+// ): Promise<CalendarSummary> => {
+//   const res = await api.get(`/habits/calendar-summary?month=${month}`);
+//   return res.data;
+// };
 
 export const logHabit = async (habitId: number, date: string) => {
   await api.post(`/habits/${habitId}/log`);

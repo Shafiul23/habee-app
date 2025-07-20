@@ -15,16 +15,15 @@ import {
 import {
   Habit,
   deleteHabit,
-  getHabitLogs,
-  getHabits,
+  getHabitSummary,
   logHabit,
   undoHabit,
 } from "../../lib/api";
 import { RootStackParamList } from "../../types";
-import HabitItem from "../components/HabitItem";
-import { useAuth } from "../contexts/AuthContext";
 import DateHeader from "../components/DateHeader";
+import HabitItem from "../components/HabitItem";
 import PrimaryButton from "../components/PrimaryButton";
+import { useAuth } from "../contexts/AuthContext";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Main">;
 
@@ -40,20 +39,8 @@ export default function Home() {
     React.useCallback(() => {
       const loadHabits = async () => {
         try {
-          const habits = await getHabits();
-          const logs = await getHabitLogs(format(date, "yyyy-MM"));
-
-          const completedToday =
-            logs[format(date, "yyyy-MM-dd")]?.map((log) => log.id) || [];
-
-          const mergedHabits = habits
-            .filter((habit) => new Date(habit.start_date) <= date)
-            .map((habit) => ({
-              ...habit,
-              completed: completedToday.includes(habit.id),
-            }));
-
-          setHabits(mergedHabits);
+          const summary = await getHabitSummary(format(date, "yyyy-MM-dd"));
+          setHabits(summary);
         } catch (err) {
           console.error("Failed to load habits:", err);
         }

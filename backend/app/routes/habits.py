@@ -131,42 +131,121 @@ def get_habit_logs(habit_id):
     ])
 
 
-@habits_bp.route("/calendar", methods=["GET"])
+@habits_bp.route("/daily-summary", methods=["GET"])
 @jwt_required()
-def calendar_summary():
+def daily_summary():
     user_id = get_jwt_identity()
-    month_str = request.args.get("month")
+    date_str = request.args.get("date")
 
-    if not month_str:
-        return {"error": "Month query param is required. Format: YYYY-MM"}, 400
+    if not date_str:
+        return {"error": "Date query param is required. Format: YYYY-MM-DD"}, 400
 
     try:
-        start_date = datetime.strptime(month_str, "%Y-%m")
+        selected_date = date.fromisoformat(date_str)
     except ValueError:
-        return {"error": "Invalid month format. Use YYYY-MM"}, 400
+        return {"error": "Invalid date format. Use YYYY-MM-DD"}, 400
 
-    # Calculate end of month
-    next_month = start_date.replace(day=28) + timedelta(days=4)
-    end_date = next_month.replace(day=1)
-
-    # Get user's habits
-    habits = Habit.query.filter_by(user_id=user_id).all()
-    habit_dict = {habit.id: habit.name for habit in habits}
-
-    # Get logs for this user and this month
-    logs = HabitLog.query.filter(
-        HabitLog.habit_id.in_(habit_dict.keys()),
-        HabitLog.date >= start_date.date(),
-        HabitLog.date < end_date.date()
+    # Get all user's habits active on this date
+    habits = Habit.query.filter(
+        Habit.user_id == user_id,
+        Habit.start_date <= selected_date
     ).all()
 
-    # Group by date and return habit info
-    calendar_data = defaultdict(list)
-    for log in logs:
-        calendar_data[log.date.isoformat()].append({
-            "id": log.habit_id,
-            "name": habit_dict[log.habit_id]
+    habit_ids = [h.id for h in habits]
+
+    # Get logs for this date
+    logs = HabitLog.query.filter(
+        HabitLog.habit_id.in_(habit_ids),
+        HabitLog.date == selected_date
+    ).all()
+
+    logged_ids = {log.habit_id for log in logs}
+
+    # Return habit list with completed status
+    summary = []
+    for habit in habits:
+        summary.append({
+            "id": habit.id,
+            "name": habit.name,
+            "start_date": habit.start_date.isoformat(),
+            "completed": habit.id in logged_ids
         })
 
-    return jsonify(calendar_data)
+    return jsonify(summary)
+
+
+# @habits_bp.route("/calendar-summary", methods=["GET"])
+# @jwt_required()
+# def calendar_summary():
+#     user_id = get_jwt_identity()
+#     month_str = request.args.get("month")
+
+#     if not month_str:
+#         return {"error": "Month query param is required. Format: YYYY-MM"}, 400
+
+#     try:
+#         month_start = datetime.strptime(month_str, "%Y-%m").date()
+#     except ValueError:
+#         return {"error": "Invalid month format. Use YYYY-MM"}, 400
+
+#     # Generate all days in the month
+#     from calendar import monthrange
+#     _, last_day = monthrange(month_start.year, month_start.month)
+#     month_days = [month_start.replace(day=day) for day in range(1, last_day + 1)]
+
+#     # Get user's habits
+#     habits = Habit.query.filter_by(user_id=user_id).all()
+#     if not habits:
+#         return jsonify({})  # No habits for user
+
+#     habit_dict = {h.id: h for h in habits}
+#     habit_ids = list(habit_dict.keys())
+
+#     # Get logs for habits during this month
+#     month_end = (month_start.replace(day=28) + timedelta(days=4)).replace(day=1)
+#     logs = HabitLog.query.filter(
+#         HabitLog.habit_id.in_(habit_ids),
+#         HabitLog.date >= month_start,
+#         HabitLog.date < month_end
+#     ).all()
+
+#     # Organize logs by date
+#     logs_by_date = defaultdict(list)
+#     for log in logs:
+#         logs_by_date[log.date].append(log.habit_id)
+
+#     today = date.today()
+#     summary = {}
+
+#     for day in month_days:
+#         if day > today:
+#             summary[day.isoformat()] = { "status": "future" }
+#             continue
+
+#         # Get habits active on that day
+#         active_habits = [h for h in habits if h.start_date <= day]
+#         total = len(active_habits)
+
+#         if total == 0:
+#             summary[day.isoformat()] = { "status": "inactive" }
+#             continue
+
+#         completed = logs_by_date.get(day, [])
+#         done = len(set(completed))
+
+#         if done == 0:
+#             status = "incomplete"
+#         elif done == total:
+#             status = "complete"
+#         else:
+#             status = "partial"
+
+#         summary[day.isoformat()] = {
+#             "status": status,
+#             "completed": done,
+#             "total": total
+#         }
+
+#     return jsonify(summary)
+
 
