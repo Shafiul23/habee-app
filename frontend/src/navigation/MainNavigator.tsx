@@ -1,11 +1,11 @@
 // MainNavigator.tsx
-import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import React from "react";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
-import HomeScreen from "../screens/HomeScreen";
 import CalendarScreen from "../screens/CalendarScreen";
-import JournalScreen from "../screens/JournalScreen";
+import GridScreen from "../screens/GridScreen";
+import HomeScreen from "../screens/HomeScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 
 const Tab = createBottomTabNavigator();
@@ -28,7 +28,7 @@ export default function MainNavigator() {
           let iconName = "home";
 
           if (route.name === "Calendar") iconName = "calendar";
-          else if (route.name === "Journal") iconName = "book";
+          else if (route.name === "Grid") iconName = "grid";
           else if (route.name === "Settings") iconName = "settings";
 
           return (
@@ -43,7 +43,7 @@ export default function MainNavigator() {
     >
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Calendar" component={CalendarScreen} />
-      <Tab.Screen name="Journal" component={JournalScreen} />
+      <Tab.Screen name="Grid" component={GridScreen} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   );

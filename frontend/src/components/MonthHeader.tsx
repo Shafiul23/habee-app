@@ -1,8 +1,8 @@
 // frontend/components/MonthHeader.tsx
-import React from "react";
-import { View, Text, Pressable, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { isSameMonth, isSameYear, addMonths, format } from "date-fns";
+import { format, isSameMonth, isSameYear } from "date-fns";
+import React from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 type Props = {
   date: Date;
@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f7ce46",
     paddingHorizontal: 20,
     paddingTop: 20,
-    marginTop: 40,
+    marginTop: 50,
     paddingBottom: 20,
     flexDirection: "row",
     alignItems: "center",
