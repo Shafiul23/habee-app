@@ -1,3 +1,4 @@
+// components/WeeklyGrid.tsx
 import {
   eachDayOfInterval,
   endOfMonth,
@@ -5,25 +6,16 @@ import {
   isAfter,
   startOfMonth,
 } from "date-fns";
-import React, { useEffect, useRef, useState } from "react";
-import {
-  Animated,
-  Dimensions,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  PanResponder,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import React, { useEffect, useState } from "react";
+import { Dimensions, ScrollView, StyleSheet, Text, View } from "react-native";
 import { getAllHabitLogs, Habit } from "../../lib/api";
+import GridCell from "./GridCell";
+import NavButtons from "./NavButtons";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 const HABITS_PER_PAGE = 5;
 const CELL_SIZE = Math.floor((SCREEN_WIDTH - 40) / (HABITS_PER_PAGE + 1));
-const DAY_LABEL_WIDTH = Math.floor(CELL_SIZE * 0.7); // Narrower than regular cells
+const DAY_LABEL_WIDTH = Math.floor(CELL_SIZE * 0.7);
 
 type Props = {
   habits: Habit[];
@@ -31,14 +23,10 @@ type Props = {
 };
 
 export default function WeeklyGrid({ habits, month }: Props) {
-  const translateX = useRef(new Animated.Value(0)).current;
-  const [currentPage, setCurrentPage] = useState(0);
-  const [page, setPage] = useState(0);
   const [completedLogs, setCompletedLogs] = useState<
     Record<string, Set<number>>
   >({});
-  const [showNav, setShowNav] = useState(true);
-  const scrollY = useRef(new Animated.Value(0)).current;
+  const [currentPage, setCurrentPage] = useState(0);
 
   const today = new Date();
   const monthStart = startOfMonth(month);
@@ -46,91 +34,31 @@ export default function WeeklyGrid({ habits, month }: Props) {
   const monthDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
   const pageCount = Math.ceil(habits.length / HABITS_PER_PAGE);
-  const startIdx = page * HABITS_PER_PAGE;
+  const startIdx = currentPage * HABITS_PER_PAGE;
   const endIdx = startIdx + HABITS_PER_PAGE;
   const habitsToDisplay = habits.slice(startIdx, endIdx);
 
-  const showLeft = page > 0;
-  const showRight = page < pageCount - 1;
-
   useEffect(() => {
-    const fetchLogs = async () => {
-      if (habits.length === 0) return;
-
-      const ids = habits.map((h) => h.id);
-      const logs = await getAllHabitLogs(ids);
-      setCompletedLogs(logs);
-    };
-
-    fetchLogs();
+    if (!habits.length) return;
+    getAllHabitLogs(habits.map((h) => h.id))
+      .then(setCompletedLogs)
+      .catch(console.error);
   }, [habits, month]);
-
-  const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const offsetY = e.nativeEvent.contentOffset.y;
-    setShowNav(offsetY < 10);
-  };
-
-  const panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        return Math.abs(gestureState.dx) > 30 && Math.abs(gestureState.dy) < 30;
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dx < -50 && currentPage < pageCount - 1) {
-          // Swipe left
-          setCurrentPage((prev) => prev + 1);
-          Animated.spring(translateX, {
-            toValue: -(currentPage + 1) * SCREEN_WIDTH,
-            useNativeDriver: true,
-          }).start();
-        } else if (gestureState.dx > 50 && currentPage > 0) {
-          // Swipe right
-          setCurrentPage((prev) => prev - 1);
-          Animated.spring(translateX, {
-            toValue: -(currentPage - 1) * SCREEN_WIDTH,
-            useNativeDriver: true,
-          }).start();
-        } else {
-          // Snap back
-          Animated.spring(translateX, {
-            toValue: -currentPage * SCREEN_WIDTH,
-            useNativeDriver: true,
-          }).start();
-        }
-      },
-    })
-  ).current;
 
   return (
     <View style={styles.container}>
-      {/* NAVIGATION BUTTONS */}
-      {showNav && (
-        <View style={styles.navButtons}>
-          {showLeft ? (
-            <Pressable onPress={() => setPage(page - 1)}>
-              <Text style={styles.navText}>← Back</Text>
-            </Pressable>
-          ) : (
-            <View style={styles.navBtnPlaceholder} />
-          )}
-          {showRight ? (
-            <Pressable onPress={() => setPage(page + 1)}>
-              <Text style={styles.navText}>More habits →</Text>
-            </Pressable>
-          ) : (
-            <View style={styles.navBtnPlaceholder} />
-          )}
-        </View>
-      )}
+      <NavButtons
+        showLeft={currentPage > 0}
+        showRight={currentPage < pageCount - 1}
+        onLeft={() => setCurrentPage((p) => p - 1)}
+        onRight={() => setCurrentPage((p) => p + 1)}
+      />
 
-      {/* STICKY HEADER ROW */}
+      {/* Sticky Header Row */}
       <View style={styles.headerRow}>
-        {/* Day Label */}
         <View style={[styles.cell, styles.headerCell, styles.dayLabelCell]}>
           <Text style={styles.headerText}>Day</Text>
         </View>
-
-        {/* Habit Name Cells */}
         <ScrollView horizontal scrollEnabled={false}>
           <View style={styles.row}>
             {habitsToDisplay.map((habit) => (
@@ -144,14 +72,12 @@ export default function WeeklyGrid({ habits, month }: Props) {
         </ScrollView>
       </View>
 
-      {/* MAIN SCROLLABLE GRID */}
+      {/* Scrollable body below */}
       <ScrollView
-        contentContainerStyle={{ paddingBottom: 100 }}
-        onScroll={handleScroll}
         scrollEventThrottle={16}
+        contentContainerStyle={{ paddingBottom: 100 }}
       >
-        <View style={{ flexDirection: "row", justifyContent: "center" }}>
-          {/* Sticky Left Column */}
+        <View style={styles.gridContent}>
           <View style={styles.stickyLeftColumn}>
             {monthDays.map((day) => (
               <View
@@ -162,42 +88,24 @@ export default function WeeklyGrid({ habits, month }: Props) {
               </View>
             ))}
           </View>
-
-          {/* Grid Content */}
           <ScrollView horizontal scrollEnabled={false}>
             <View>
               {monthDays.map((day) => {
                 const iso = format(day, "yyyy-MM-dd");
-
                 return (
                   <View key={iso} style={styles.row}>
                     {habitsToDisplay.map((habit) => {
-                      const iso = format(day, "yyyy-MM-dd");
                       const isFuture = isAfter(day, today);
                       const started = new Date(habit.start_date) <= day;
                       const completed = completedLogs[iso]?.has(habit.id);
-
-                      let bgColor = "#eee";
-                      let symbol = "";
-
-                      if (!started || isFuture) {
-                        bgColor = "#e5e5e5"; // Grey: future or not yet started
-                      } else if (completed) {
-                        // bgColor = "#bddf9a";
-                        bgColor = "#52c41a";
-                        symbol = "✓";
-                      } else {
-                        bgColor = "#ff4d4f"; // Red: missed
-                        symbol = "✗";
-                      }
+                      const inactive = isFuture || !started;
 
                       return (
-                        <View
+                        <GridCell
                           key={`${habit.id}-${iso}`}
-                          style={[styles.cell, { backgroundColor: bgColor }]}
-                        >
-                          <Text style={styles.icon}>{symbol}</Text>
-                        </View>
+                          completed={!!completed}
+                          inactive={inactive}
+                        />
                       );
                     })}
                   </View>
@@ -216,30 +124,21 @@ const styles = StyleSheet.create({
     marginTop: 16,
     paddingHorizontal: 10,
   },
-  navButtons: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  navText: {
-    fontSize: 20,
-    fontWeight: "600",
-  },
-  navBtnPlaceholder: {
-    width: 32,
-  },
   headerRow: {
     flexDirection: "row",
     backgroundColor: "#fff",
     zIndex: 10,
+  },
+  gridContent: {
+    flexDirection: "row",
+    justifyContent: "center",
   },
   stickyLeftColumn: {
     width: DAY_LABEL_WIDTH,
     backgroundColor: "#fff",
     zIndex: 10,
   },
-  row: {
-    flexDirection: "row",
-  },
+  row: { flexDirection: "row" },
   cell: {
     width: CELL_SIZE,
     height: CELL_SIZE,
@@ -249,15 +148,9 @@ const styles = StyleSheet.create({
     margin: 2,
     borderColor: "grey",
   },
-  headerCell: {
-    backgroundColor: "#fff",
-  },
-  dayLabelCell: {
-    width: DAY_LABEL_WIDTH,
-  },
-  dateCell: {
-    borderTopWidth: 0,
-  },
+  headerCell: { backgroundColor: "#fff" },
+  dayLabelCell: { width: DAY_LABEL_WIDTH },
+  dateCell: { borderTopWidth: 0 },
   headerText: {
     fontSize: 12,
     fontWeight: "700",
@@ -273,10 +166,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
     textAlign: "center",
-  },
-  icon: {
-    fontSize: 22,
-    fontWeight: "900",
-    color: "#000",
   },
 });
