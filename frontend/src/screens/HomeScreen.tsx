@@ -6,8 +6,9 @@ import { addDays, format, isToday, subDays } from "date-fns";
 import React, { useState } from "react";
 import {
   Alert,
-  FlatList,
   Pressable,
+  RefreshControl,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -30,22 +31,29 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Main">;
 export default function Home() {
   const [date, setDate] = useState(new Date());
   const [habits, setHabits] = useState<Habit[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
   const [showHabitMenu, setShowHabitMenu] = useState<number | null>(null);
 
   const { isLoggedIn } = useAuth();
   const navigation = useNavigation<NavigationProp>();
 
+  const loadHabits = async () => {
+    try {
+      const summary = await getHabitSummary(format(date, "yyyy-MM-dd"));
+      setHabits(summary);
+    } catch (err) {
+      console.error("Failed to load habits:", err);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadHabits();
+    setRefreshing(false);
+  };
+
   useFocusEffect(
     React.useCallback(() => {
-      const loadHabits = async () => {
-        try {
-          const summary = await getHabitSummary(format(date, "yyyy-MM-dd"));
-          setHabits(summary);
-        } catch (err) {
-          console.error("Failed to load habits:", err);
-        }
-      };
-
       loadHabits();
     }, [isLoggedIn, date])
   );
@@ -98,69 +106,74 @@ export default function Home() {
     <>
       <DateHeader date={date} onPrev={goToPrevDay} onNext={goToNextDay} />
 
-      <View style={styles.container}>
-        <FlatList
-          data={habits}
-          keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={{ paddingBottom: 100 }}
-          ListHeaderComponent={
-            <Text style={styles.objectivesTitle}>
-              {format(date, "EEEE")} Habits
-            </Text>
-          }
-          renderItem={({ item }) => (
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <View style={styles.innerContainer}>
+          <Text style={styles.objectivesTitle}>
+            {format(date, "EEEE")} Habits
+          </Text>
+
+          {habits.map((item) => (
             <HabitItem
+              key={item.id}
               item={item}
               onToggle={() => handleToggleHabit(item.id, item.completed)}
               onShowMenu={() => setShowHabitMenu(item.id)}
             />
-          )}
-        />
+          ))}
+        </View>
+      </ScrollView>
 
+      <Pressable
+        style={styles.fab}
+        onPress={() => navigation.navigate("CreateHabit")}
+      >
+        <Ionicons name="create-outline" size={32} color="black" />
+      </Pressable>
+
+      {showHabitMenu !== null && (
         <Pressable
-          style={styles.fab}
-          onPress={() => navigation.navigate("CreateHabit")}
+          style={styles.modalOverlay}
+          onPress={() => setShowHabitMenu(null)}
         >
-          <Ionicons name="create-outline" size={32} color="black" />
-        </Pressable>
-
-        {showHabitMenu !== null && (
-          <Pressable
-            style={styles.modalOverlay}
-            onPress={() => setShowHabitMenu(null)}
-          >
-            <Pressable onPress={() => {}} style={styles.menuBox}>
-              <PrimaryButton
-                title="Edit Habit"
-                onPress={() => {
-                  Alert.alert("Edit feature not implemented yet.");
-                  setShowHabitMenu(null);
-                }}
-              />
-              <PrimaryButton
-                title="Delete Habit"
-                onPress={() => handleDeleteHabit(showHabitMenu)}
-                style={{
-                  backgroundColor: "#fff",
-                  borderWidth: 1,
-                  borderColor: "#e0e0e0",
-                }}
-                textStyle={{ color: "red" }}
-              />
-            </Pressable>
+          <Pressable onPress={() => {}} style={styles.menuBox}>
+            <PrimaryButton
+              title="Edit Habit"
+              onPress={() => {
+                Alert.alert("Edit feature not implemented yet.");
+                setShowHabitMenu(null);
+              }}
+            />
+            <PrimaryButton
+              title="Delete Habit"
+              onPress={() => handleDeleteHabit(showHabitMenu)}
+              style={{
+                backgroundColor: "#fff",
+                borderWidth: 1,
+                borderColor: "#e0e0e0",
+              }}
+              textStyle={{ color: "red" }}
+            />
           </Pressable>
-        )}
-      </View>
+        </Pressable>
+      )}
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: 20,
-    paddingHorizontal: 20,
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: "center",
+    paddingBottom: 100,
     backgroundColor: "#fff",
+  },
+  innerContainer: {
+    paddingHorizontal: 20,
   },
   objectivesTitle: {
     fontSize: 24,

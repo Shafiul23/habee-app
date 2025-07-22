@@ -1,12 +1,12 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
 import {
-  format,
-  startOfMonth,
-  endOfMonth,
   eachDayOfInterval,
+  endOfMonth,
+  format,
   getDay,
+  startOfMonth,
 } from "date-fns";
+import React from "react";
+import { StyleSheet, Text, View } from "react-native";
 import { CalendarSummary } from "../../lib/api";
 
 type Props = {
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
   },
   dayLabel: {
     fontSize: 14,
-    fontWeight: "600",
+    fontWeight: "700",
     width: CELL_SIZE,
     textAlign: "center",
     color: "#000",

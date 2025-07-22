@@ -27,7 +27,7 @@ export default function CreateHabitScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.card}>
-        <Text style={styles.label}>Habit Name</Text>
+        <Text style={styles.label}>New Habit</Text>
         <TextInput
           style={styles.input}
           value={name}

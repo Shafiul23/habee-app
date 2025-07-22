@@ -107,14 +107,14 @@ export default function WeeklyGrid({ habits, month }: Props) {
       {showNav && (
         <View style={styles.navButtons}>
           {showLeft ? (
-            <Pressable onPress={() => setPage(page - 1)} style={styles.navBtn}>
+            <Pressable onPress={() => setPage(page - 1)}>
               <Text style={styles.navText}>← Back</Text>
             </Pressable>
           ) : (
             <View style={styles.navBtnPlaceholder} />
           )}
           {showRight ? (
-            <Pressable onPress={() => setPage(page + 1)} style={styles.navBtn}>
+            <Pressable onPress={() => setPage(page + 1)}>
               <Text style={styles.navText}>More habits →</Text>
             </Pressable>
           ) : (
@@ -183,10 +183,11 @@ export default function WeeklyGrid({ habits, month }: Props) {
                       if (!started || isFuture) {
                         bgColor = "#e5e5e5"; // Grey: future or not yet started
                       } else if (completed) {
-                        bgColor = "#bddf9a"; // Green: done
+                        // bgColor = "#bddf9a";
+                        bgColor = "#52c41a";
                         symbol = "✓";
                       } else {
-                        bgColor = "#ffc7ce"; // Red: missed
+                        bgColor = "#ff4d4f"; // Red: missed
                         symbol = "✗";
                       }
 
@@ -218,10 +219,6 @@ const styles = StyleSheet.create({
   navButtons: {
     flexDirection: "row",
     justifyContent: "space-between",
-    // marginBottom: 6,
-  },
-  navBtn: {
-    // padding: 8,
   },
   navText: {
     fontSize: 20,
