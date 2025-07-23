@@ -9,6 +9,7 @@ type AuthContextType = {
   login: (token: string) => Promise<void>;
   logout: () => Promise<void>;
   register: (email: string, password: string) => Promise<void>;
+  deleteAccount: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -60,9 +61,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setToken(null);
   };
 
+  const deleteAccount = async () => {
+    await api.delete("/auth/delete");
+    await logout(); // Clear token and state
+  };
+
   return (
     <AuthContext.Provider
-      value={{ isLoggedIn, token, register, login, logout }}
+      value={{ isLoggedIn, token, register, login, logout, deleteAccount }}
     >
       {children}
     </AuthContext.Provider>

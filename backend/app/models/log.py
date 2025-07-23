@@ -1,3 +1,4 @@
+# backend/app/models/log.py
 from app.extensions import db
 from datetime import date
 

@@ -78,4 +78,8 @@ export const deleteHabit = async (id: number) => {
   return await api.delete(`/habits/${id}`);
 };
 
+export const deleteUser = async () => {
+  return await api.delete("/auth/delete");
+};
+
 export default api;
