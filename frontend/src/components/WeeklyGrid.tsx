@@ -7,36 +7,33 @@ import {
   startOfMonth,
 } from "date-fns";
 import React, { useEffect, useState } from "react";
-import { Dimensions, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { getAllHabitLogs, Habit } from "../../lib/api";
+import { CELL_SIZE, DAY_LABEL_WIDTH } from "../constants/constants";
+import { usePaginatedHabits } from "../hooks/usePaginatedHabits";
 import GridCell from "./GridCell";
-import NavButtons from "./NavButtons";
 
-const SCREEN_WIDTH = Dimensions.get("window").width;
-const HABITS_PER_PAGE = 5;
-const CELL_SIZE = Math.floor((SCREEN_WIDTH - 40) / (HABITS_PER_PAGE + 1));
-const DAY_LABEL_WIDTH = Math.floor(CELL_SIZE * 0.7);
-
-type Props = {
+type WeeklyGridProps = {
   habits: Habit[];
   month: Date;
+  currentPage: number;
 };
 
-export default function WeeklyGrid({ habits, month }: Props) {
+export default function WeeklyGrid({
+  habits,
+  month,
+  currentPage,
+}: WeeklyGridProps) {
   const [completedLogs, setCompletedLogs] = useState<
     Record<string, Set<number>>
   >({});
-  const [currentPage, setCurrentPage] = useState(0);
 
   const today = new Date();
   const monthStart = startOfMonth(month);
   const monthEnd = endOfMonth(month);
   const monthDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
-  const pageCount = Math.ceil(habits.length / HABITS_PER_PAGE);
-  const startIdx = currentPage * HABITS_PER_PAGE;
-  const endIdx = startIdx + HABITS_PER_PAGE;
-  const habitsToDisplay = habits.slice(startIdx, endIdx);
+  const { habitsToDisplay } = usePaginatedHabits(habits, currentPage);
 
   useEffect(() => {
     if (!habits.length) return;
@@ -47,32 +44,6 @@ export default function WeeklyGrid({ habits, month }: Props) {
 
   return (
     <View style={styles.container}>
-      <NavButtons
-        showLeft={currentPage > 0}
-        showRight={currentPage < pageCount - 1}
-        onLeft={() => setCurrentPage((p) => p - 1)}
-        onRight={() => setCurrentPage((p) => p + 1)}
-      />
-
-      {/* Sticky Header Row */}
-      <View style={styles.headerRow}>
-        <View style={[styles.cell, styles.headerCell, styles.dayLabelCell]}>
-          <Text style={styles.headerText}>Day</Text>
-        </View>
-        <ScrollView horizontal scrollEnabled={false}>
-          <View style={styles.row}>
-            {habitsToDisplay.map((habit) => (
-              <View key={habit.id} style={[styles.cell, styles.headerCell]}>
-                <Text numberOfLines={2} style={styles.habitName}>
-                  {habit.name}
-                </Text>
-              </View>
-            ))}
-          </View>
-        </ScrollView>
-      </View>
-
-      {/* Scrollable body below */}
       <ScrollView
         scrollEventThrottle={16}
         contentContainerStyle={{ paddingBottom: 100 }}
