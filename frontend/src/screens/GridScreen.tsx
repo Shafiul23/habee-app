@@ -2,7 +2,7 @@ import { addMonths, subMonths } from "date-fns";
 import React, { useEffect, useState } from "react";
 import { RefreshControl, ScrollView, StyleSheet, View } from "react-native";
 import { getHabits, Habit } from "../../lib/api";
-import MonthHeader from "../components/MonthHeader";
+import HeaderNav from "../components/HeaderNav";
 import WeeklyGrid from "../components/WeeklyGrid";
 
 export default function GridScreen() {
@@ -39,7 +39,7 @@ export default function GridScreen() {
 
   return (
     <View style={styles.container}>
-      <MonthHeader
+      <HeaderNav
         date={selectedMonth}
         onPrev={handlePrevMonth}
         onNext={handleNextMonth}

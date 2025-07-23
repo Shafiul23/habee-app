@@ -3,8 +3,8 @@ import React, { useEffect, useState } from "react";
 import { RefreshControl, ScrollView, StyleSheet, View } from "react-native";
 import { CalendarSummary, getCalendarSummary } from "../../lib/api";
 import CalendarGrid from "../components/CalendarGrid";
+import HeaderNav from "../components/HeaderNav";
 import Legend from "../components/Legend";
-import MonthHeader from "../components/MonthHeader";
 
 export default function CalendarScreen() {
   const [selectedMonth, setSelectedMonth] = useState(new Date());
@@ -41,7 +41,7 @@ export default function CalendarScreen() {
 
   return (
     <>
-      <MonthHeader
+      <HeaderNav
         date={selectedMonth}
         onPrev={handlePrevMonth}
         onNext={handleNextMonth}

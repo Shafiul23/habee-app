@@ -21,8 +21,8 @@ import {
   undoHabit,
 } from "../../lib/api";
 import { RootStackParamList } from "../../types";
-import DateHeader from "../components/DateHeader";
 import HabitItem from "../components/HabitItem";
+import HeaderNav from "../components/HeaderNav";
 import PrimaryButton from "../components/PrimaryButton";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -104,7 +104,12 @@ export default function Home() {
 
   return (
     <>
-      <DateHeader date={date} onPrev={goToPrevDay} onNext={goToNextDay} />
+      <HeaderNav
+        date={date}
+        onPrev={goToPrevDay}
+        onNext={goToNextDay}
+        mode="day"
+      />
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
