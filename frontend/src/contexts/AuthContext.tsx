@@ -63,7 +63,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const deleteAccount = async () => {
     await api.delete("/auth/delete");
-    await logout(); // Clear token and state
+    await logout();
   };
 
   return (
