@@ -110,7 +110,6 @@ export default function Home() {
         onNext={goToNextDay}
         mode="day"
       />
-
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         refreshControl={
@@ -121,15 +120,21 @@ export default function Home() {
           <Text style={styles.objectivesTitle}>
             {format(date, "EEEE")} Habits
           </Text>
-
-          {habits.map((item) => (
-            <HabitItem
-              key={item.id}
-              item={item}
-              onToggle={() => handleToggleHabit(item.id, item.completed)}
-              onShowMenu={() => setShowHabitMenu(item.id)}
-            />
-          ))}
+          {habits.length > 0 ? (
+            habits.map((item) => (
+              <HabitItem
+                key={item.id}
+                item={item}
+                onToggle={() => handleToggleHabit(item.id, item.completed)}
+                onShowMenu={() => setShowHabitMenu(item.id)}
+              />
+            ))
+          ) : (
+            <Text style={styles.emptyText}>
+              You haven’t added any habits yet. Tap the button below to get
+              started.
+            </Text>
+          )}
         </View>
       </ScrollView>
 
@@ -182,11 +187,12 @@ const styles = StyleSheet.create({
   },
   objectivesTitle: {
     fontSize: 24,
-    textAlign: "center",
     fontWeight: "700",
-    marginBottom: 30,
+    marginBottom: 16,
+    marginTop: 10,
     color: "#000",
-    backgroundColor: "fff",
+    textAlign: "center",
+    backgroundColor: "#fff",
   },
   fab: {
     position: "absolute",
@@ -221,5 +227,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+  },
+  emptyText: {
+    fontSize: 16,
+    textAlign: "center",
+    color: "#777",
+    marginTop: 8,
+    lineHeight: 24,
   },
 });

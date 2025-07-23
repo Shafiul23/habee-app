@@ -1,6 +1,12 @@
 import { addMonths, subMonths } from "date-fns";
 import React, { useEffect, useState } from "react";
-import { RefreshControl, ScrollView, StyleSheet, View } from "react-native";
+import {
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  View,
+  Text,
+} from "react-native";
 import { getHabits, Habit } from "../../lib/api";
 import HeaderNav from "../components/HeaderNav";
 import WeeklyGrid from "../components/WeeklyGrid";
@@ -50,7 +56,13 @@ export default function GridScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        <WeeklyGrid habits={habits} month={selectedMonth} />
+        {habits.length > 0 ? (
+          <WeeklyGrid habits={habits} month={selectedMonth} />
+        ) : (
+          <Text style={styles.emptyText}>
+            No habits to display. Add habits to view your monthly progress.
+          </Text>
+        )}
       </ScrollView>
     </View>
   );
@@ -64,5 +76,13 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     justifyContent: "center",
+  },
+  emptyText: {
+    fontSize: 16,
+    color: "#777",
+    textAlign: "center",
+    paddingHorizontal: 20,
+    marginTop: 20,
+    lineHeight: 24,
   },
 });
