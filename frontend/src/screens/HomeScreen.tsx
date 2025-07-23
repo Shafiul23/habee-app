@@ -130,10 +130,12 @@ export default function Home() {
               />
             ))
           ) : (
-            <Text style={styles.emptyText}>
-              You haven’t added any habits yet. Tap the button below to get
-              started.
-            </Text>
+            <View style={styles.emptyWrapper}>
+              <Text style={styles.emptyText}>
+                You haven’t added any habits yet.{"\n"}Tap the + button below to
+                get started.
+              </Text>
+            </View>
           )}
         </View>
       </ScrollView>
@@ -178,18 +180,18 @@ export default function Home() {
 const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
-    justifyContent: "center",
     paddingBottom: 100,
     backgroundColor: "#fff",
   },
   innerContainer: {
     paddingHorizontal: 20,
+    minHeight: "100%",
   },
   objectivesTitle: {
     fontSize: 24,
     fontWeight: "700",
     marginBottom: 16,
-    marginTop: 10,
+    marginTop: 20,
     color: "#000",
     textAlign: "center",
     backgroundColor: "#fff",
@@ -228,11 +230,17 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
+  emptyWrapper: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: 300,
+  },
   emptyText: {
     fontSize: 16,
     textAlign: "center",
     color: "#777",
-    marginTop: 8,
     lineHeight: 24,
+    paddingHorizontal: 20,
   },
 });
