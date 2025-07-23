@@ -8,6 +8,7 @@ type AuthContextType = {
   token: string | null; // for backend calls
   login: (token: string) => Promise<void>;
   logout: () => Promise<void>;
+  register: (email: string, password: string) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -41,6 +42,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     checkToken();
   }, []);
 
+  const register = async (email: string, password: string) => {
+    await api.post("/auth/register", { email, password });
+  };
+
   const login = async (token: string) => {
     await SecureStore.setItemAsync("token", token);
     api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
@@ -56,7 +61,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, token, login, logout }}>
+    <AuthContext.Provider
+      value={{ isLoggedIn, token, register, login, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );

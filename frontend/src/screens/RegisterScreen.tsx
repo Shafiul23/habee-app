@@ -3,53 +3,38 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   StyleSheet,
   Text,
   TextInput,
   View,
+  Pressable,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import api from "../../lib/api";
 import PrimaryButton from "../components/PrimaryButton";
 import { useAuth } from "../contexts/AuthContext";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../../types";
-import { useNavigation } from "@react-navigation/native";
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Main">;
-
-const LoginScreen = () => {
+export default function RegisterScreen({ navigation }: { navigation: any }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
-  const navigation = useNavigation<NavigationProp>();
-  const { login } = useAuth();
+  const { register } = useAuth();
 
-  const handleLogin = async () => {
-    try {
-      const res = await api.post("/auth/login", { email, password });
-      await login(res.data.access_token);
-    } catch (err: any) {
-      Alert.alert(
-        "Login Failed",
-        err.response?.data?.error || "Something went wrong"
-      );
+  const handleRegister = async () => {
+    if (password !== confirmPassword) {
+      Alert.alert("Error", "Passwords do not match");
+      return;
     }
-  };
 
-  // DEV LOGIN - for testing purposes
-  const handleDevLogin = async () => {
     try {
-      const res = await api.post("/auth/login", {
-        email: "shaf@example.com",
-        password: "secret123",
-      });
-      await login(res.data.access_token);
+      await register(email, password);
+      Alert.alert("Success", "Account created. You can now log in.");
+      navigation.navigate("Login");
     } catch (err: any) {
       Alert.alert(
-        "Login Failed",
+        "Registration Failed",
         err.response?.data?.error || "Something went wrong"
       );
     }
@@ -61,7 +46,7 @@ const LoginScreen = () => {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <View style={styles.card}>
-        <Text style={styles.title}>Azm</Text>
+        <Text style={styles.title}>Register</Text>
 
         <TextInput
           style={styles.input}
@@ -91,16 +76,33 @@ const LoginScreen = () => {
           </Pressable>
         </View>
 
-        <PrimaryButton title="Log In" onPress={handleLogin} />
-        <PrimaryButton title="Dev Login" onPress={handleDevLogin} />
+        <View style={styles.passwordWrapper}>
+          <TextInput
+            style={styles.passwordInput}
+            placeholder="Confirm Password"
+            placeholderTextColor="#999"
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            secureTextEntry={!showConfirm}
+          />
+          <Pressable onPress={() => setShowConfirm((prev) => !prev)}>
+            <Ionicons
+              name={showConfirm ? "eye-off" : "eye"}
+              size={24}
+              color="#666"
+            />
+          </Pressable>
+        </View>
 
-        <Pressable onPress={() => navigation.navigate("Register")}>
-          <Text style={styles.link}>Don’t have an account? Register</Text>
+        <PrimaryButton title="Register" onPress={handleRegister} />
+
+        <Pressable onPress={() => navigation.navigate("Login")}>
+          <Text style={styles.link}>Already have an account? Log in</Text>
         </Pressable>
       </View>
     </KeyboardAvoidingView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -160,5 +162,3 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
 });
-
-export default LoginScreen;

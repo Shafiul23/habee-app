@@ -7,6 +7,7 @@ import LoginScreen from "../screens/LoginScreen";
 import MainNavigator from "./MainNavigator";
 import CreateHabitScreen from "../screens/CreateHabitScreen";
 import { RootStackParamList } from "../../types";
+import RegisterScreen from "../screens/RegisterScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -26,7 +27,10 @@ export default function AppNavigator() {
             />
           </>
         ) : (
-          <Stack.Screen name="Login" component={LoginScreen} />
+          <>
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="Register" component={RegisterScreen} />
+          </>
         )}
       </Stack.Navigator>
     </NavigationContainer>
