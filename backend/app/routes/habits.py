@@ -7,6 +7,7 @@ from app.models.habit import Habit
 from app.models.log import HabitLog
 from datetime import date, datetime, timedelta
 from collections import defaultdict
+from calendar import monthrange
 
 
 
@@ -115,20 +116,41 @@ def unlog_habit(habit_id):
     return jsonify({"message": "Habit log undone for today"})
 
 
-
-@habits_bp.route("/<int:habit_id>/logs", methods=["GET"])
+@habits_bp.route("/log-summary", methods=["GET"])
 @jwt_required()
-def get_habit_logs(habit_id):
+def log_summary():
     user_id = get_jwt_identity()
-    habit = Habit.query.filter_by(id=habit_id, user_id=user_id).first()
+    month_str = request.args.get("month")
 
-    if not habit:
-        return jsonify({"error": "Habit not found"}), 404
+    if not month_str:
+        return {"error": "Month query param required. Format: YYYY-MM"}, 400
 
-    logs = HabitLog.query.filter_by(habit_id=habit.id).all()
-    return jsonify([
-        {"date": log.date.isoformat()} for log in logs
-    ])
+    try:
+        year, month = map(int, month_str.split("-"))
+    except ValueError:
+        return {"error": "Invalid month format. Use YYYY-MM"}, 400
+
+    start_date = date(year, month, 1)
+    end_date = date(year, month, monthrange(year, month)[1])
+
+    habits = Habit.query.filter_by(user_id=user_id).all()
+    habit_ids = [h.id for h in habits]
+
+    logs = HabitLog.query.filter(
+        HabitLog.habit_id.in_(habit_ids),
+        HabitLog.date >= start_date,
+        HabitLog.date <= end_date
+    ).all()
+
+    result = {}
+    for log in logs:
+        day = log.date.isoformat()
+        if day not in result:
+            result[day] = []
+        result[day].append(log.habit_id)
+
+    return jsonify(result)
+
 
 
 @habits_bp.route("/daily-summary", methods=["GET"])

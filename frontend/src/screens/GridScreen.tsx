@@ -11,7 +11,7 @@ import {
 import { getHabits, Habit } from "../../lib/api";
 import HeaderNav from "../components/HeaderNav";
 import WeeklyGrid from "../components/WeeklyGrid";
-import { CELL_SIZE, DAY_LABEL_WIDTH } from "../constants/constants";
+import { getLayoutConstants } from "../constants/layout";
 import { usePaginatedHabits } from "../hooks/usePaginatedHabits";
 
 export default function GridScreen() {
@@ -23,6 +23,9 @@ export default function GridScreen() {
   const { pageCount, habitsToDisplay } = usePaginatedHabits(
     habits,
     currentPage
+  );
+  const { cellSize, dayLabelWidth } = getLayoutConstants(
+    habitsToDisplay.length
   );
 
   const fetchHabits = async () => {
@@ -69,12 +72,21 @@ export default function GridScreen() {
       />
       <View style={styles.container}>
         <View style={styles.headerRow}>
-          <View style={[styles.cell, styles.headerCell, styles.dayLabelCell]}>
+          <View
+            style={[styles.cell, styles.headerCell, { width: dayLabelWidth }]}
+          >
             <Text style={styles.headerText}>Day</Text>
           </View>
           <View style={styles.row}>
             {habitsToDisplay.map((habit) => (
-              <View key={habit.id} style={[styles.cell, styles.headerCell]}>
+              <View
+                key={habit.id}
+                style={[
+                  styles.cell,
+                  styles.headerCell,
+                  { width: cellSize, height: cellSize },
+                ]}
+              >
                 <Text numberOfLines={2} style={styles.habitName}>
                   {habit.name}
                 </Text>
@@ -94,6 +106,8 @@ export default function GridScreen() {
               habits={habits}
               month={selectedMonth}
               currentPage={currentPage}
+              cellSize={cellSize}
+              dayLabelWidth={dayLabelWidth}
             />
           ) : (
             <Text style={styles.emptyText}>
@@ -145,14 +159,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   stickyLeftColumn: {
-    width: DAY_LABEL_WIDTH,
     backgroundColor: "#fff",
     zIndex: 10,
   },
   row: { flexDirection: "row" },
   cell: {
-    width: CELL_SIZE,
-    height: CELL_SIZE,
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 6,
@@ -160,7 +171,6 @@ const styles = StyleSheet.create({
     borderColor: "grey",
   },
   headerCell: { backgroundColor: "#fff" },
-  dayLabelCell: { width: DAY_LABEL_WIDTH },
   dateCell: { borderTopWidth: 0 },
   headerText: {
     fontSize: 12,
@@ -168,7 +178,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   habitName: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: "600",
     textAlign: "center",
     paddingHorizontal: 1,

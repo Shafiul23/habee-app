@@ -4,12 +4,14 @@ import {
   endOfMonth,
   format,
   isAfter,
+  isBefore,
+  isEqual,
+  parseISO,
   startOfMonth,
 } from "date-fns";
 import React, { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { getAllHabitLogs, Habit } from "../../lib/api";
-import { CELL_SIZE, DAY_LABEL_WIDTH } from "../constants/constants";
+import { getHabitLogSummary, Habit } from "../../lib/api";
 import { usePaginatedHabits } from "../hooks/usePaginatedHabits";
 import GridCell from "./GridCell";
 
@@ -17,17 +19,20 @@ type WeeklyGridProps = {
   habits: Habit[];
   month: Date;
   currentPage: number;
+  cellSize: number;
+  dayLabelWidth: number;
 };
 
 export default function WeeklyGrid({
   habits,
   month,
   currentPage,
+  cellSize,
+  dayLabelWidth,
 }: WeeklyGridProps) {
   const [completedLogs, setCompletedLogs] = useState<
     Record<string, Set<number>>
   >({});
-
   const today = new Date();
   const monthStart = startOfMonth(month);
   const monthEnd = endOfMonth(month);
@@ -37,9 +42,8 @@ export default function WeeklyGrid({
 
   useEffect(() => {
     if (!habits.length) return;
-    getAllHabitLogs(habits.map((h) => h.id))
-      .then(setCompletedLogs)
-      .catch(console.error);
+    const monthStr = format(month, "yyyy-MM");
+    getHabitLogSummary(monthStr).then(setCompletedLogs).catch(console.error);
   }, [habits, month]);
 
   return (
@@ -49,16 +53,20 @@ export default function WeeklyGrid({
         contentContainerStyle={{ paddingBottom: 10 }}
       >
         <View style={styles.gridContent}>
-          <View style={styles.stickyLeftColumn}>
+          <View style={[styles.stickyLeftColumn, { width: dayLabelWidth }]}>
             {monthDays.map((day) => (
               <View
                 key={day.toISOString()}
-                style={[styles.cell, styles.dateCell, styles.dayLabelCell]}
+                style={[
+                  styles.cell,
+                  { width: dayLabelWidth, height: cellSize },
+                ]}
               >
                 <Text style={styles.dayLabelText}>{day.getDate()}</Text>
               </View>
             ))}
           </View>
+
           <ScrollView horizontal scrollEnabled={false}>
             <View>
               {monthDays.map((day) => {
@@ -67,7 +75,9 @@ export default function WeeklyGrid({
                   <View key={iso} style={styles.row}>
                     {habitsToDisplay.map((habit) => {
                       const isFuture = isAfter(day, today);
-                      const started = new Date(habit.start_date) <= day;
+                      const habitStart = parseISO(habit.start_date);
+                      const started =
+                        isBefore(habitStart, day) || isEqual(habitStart, day);
                       const completed = completedLogs[iso]?.has(habit.id);
                       const inactive = isFuture || !started;
 
@@ -76,6 +86,7 @@ export default function WeeklyGrid({
                           key={`${habit.id}-${iso}`}
                           completed={!!completed}
                           inactive={inactive}
+                          size={cellSize}
                         />
                       );
                     })}
@@ -105,14 +116,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   stickyLeftColumn: {
-    width: DAY_LABEL_WIDTH,
     backgroundColor: "#fff",
     zIndex: 10,
   },
   row: { flexDirection: "row" },
   cell: {
-    width: CELL_SIZE,
-    height: CELL_SIZE,
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 6,
@@ -120,8 +128,6 @@ const styles = StyleSheet.create({
     borderColor: "grey",
   },
   headerCell: { backgroundColor: "#fff" },
-  dayLabelCell: { width: DAY_LABEL_WIDTH },
-  dateCell: { borderTopWidth: 0 },
   headerText: {
     fontSize: 12,
     fontWeight: "700",

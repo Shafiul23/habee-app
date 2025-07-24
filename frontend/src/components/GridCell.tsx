@@ -1,14 +1,14 @@
 // components/GridCell.tsx
 import React from "react";
-import { View, Text, StyleSheet, Dimensions } from "react-native";
-import { CELL_SIZE } from "../constants/constants";
+import { StyleSheet, View } from "react-native";
 
 type Props = {
   completed: boolean;
   inactive: boolean;
+  size: number;
 };
 
-export default function GridCell({ completed, inactive }: Props) {
+export default function GridCell({ completed, inactive, size }: Props) {
   let bgColor = "#eee";
 
   if (inactive) {
@@ -19,13 +19,18 @@ export default function GridCell({ completed, inactive }: Props) {
     bgColor = "#ff4d4f";
   }
 
-  return <View style={[styles.cell, { backgroundColor: bgColor }]}></View>;
+  return (
+    <View
+      style={[
+        styles.cell,
+        { backgroundColor: bgColor, width: size, height: size },
+      ]}
+    ></View>
+  );
 }
 
 const styles = StyleSheet.create({
   cell: {
-    width: CELL_SIZE,
-    height: CELL_SIZE,
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 6,

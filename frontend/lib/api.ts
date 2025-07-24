@@ -45,18 +45,18 @@ export const getHabitSummary = async (date: string): Promise<Habit[]> => {
   return res.data;
 };
 
-export const getAllHabitLogs = async (habitIds: number[]) => {
-  const allLogs: { [date: string]: Set<number> } = {};
+export const getHabitLogSummary = async (
+  month: string
+): Promise<Record<string, Set<number>>> => {
+  const res = await api.get(`/habits/log-summary?month=${month}`);
+  const data = res.data;
 
-  for (const id of habitIds) {
-    const logs = await api.get(`/habits/${id}/logs`);
-    logs.data.forEach((log: { date: string }) => {
-      if (!allLogs[log.date]) allLogs[log.date] = new Set();
-      allLogs[log.date].add(id);
-    });
+  const result: Record<string, Set<number>> = {};
+  for (const date in data) {
+    result[date] = new Set(data[date]);
   }
 
-  return allLogs;
+  return result;
 };
 
 export const getCalendarSummary = async (
