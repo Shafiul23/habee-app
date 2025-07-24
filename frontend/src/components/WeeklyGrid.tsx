@@ -46,7 +46,7 @@ export default function WeeklyGrid({
     <View style={styles.container}>
       <ScrollView
         scrollEventThrottle={16}
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={{ paddingBottom: 10 }}
       >
         <View style={styles.gridContent}>
           <View style={styles.stickyLeftColumn}>

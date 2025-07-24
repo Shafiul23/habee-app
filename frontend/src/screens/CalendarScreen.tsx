@@ -54,12 +54,7 @@ export default function CalendarScreen() {
       >
         <CalendarGrid month={selectedMonth} summary={calendarData} />
 
-        <View style={styles.legendRow}>
-          <Legend color="#52c41a" label="Complete" />
-          <Legend color="#f7ce46" label="Partial" />
-          <Legend color="#ff4d4f" label="Missed" />
-          <Legend color="#e5e5e5" label="Unlogged" />
-        </View>
+        <Legend />
       </ScrollView>
     </>
   );
@@ -71,11 +66,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingBottom: 100,
     backgroundColor: "#fff",
-  },
-  legendRow: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginTop: 20,
-    width: "100%",
   },
 });

@@ -84,7 +84,7 @@ export default function CalendarGrid({ month, summary }: Props) {
   );
 }
 
-const CELL_SIZE = 44;
+const CALENDAR_CELL_SIZE = 44;
 
 const styles = StyleSheet.create({
   container: {
@@ -99,13 +99,13 @@ const styles = StyleSheet.create({
   dayLabel: {
     fontSize: 14,
     fontWeight: "700",
-    width: CELL_SIZE,
+    width: CALENDAR_CELL_SIZE,
     textAlign: "center",
     color: "#000",
   },
   cell: {
-    width: CELL_SIZE,
-    height: CELL_SIZE,
+    width: CALENDAR_CELL_SIZE,
+    height: CALENDAR_CELL_SIZE,
     margin: 1,
     borderRadius: 6,
     justifyContent: "center",
