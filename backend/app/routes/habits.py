@@ -27,6 +27,9 @@ def create_habit():
 
     if not name:
         return jsonify({"error": "Habit name is required"}), 400
+    
+    if len(name) > 64:
+        return jsonify({"error": "Habit name cannot exceed 64 characters"}), 400
 
     try:
         start_date = date.fromisoformat(start_date_str) if start_date_str else date.today()
@@ -59,6 +62,10 @@ def update_habit(habit_id):
     new_name = data.get("name")
     if not new_name:
         return jsonify({"error": "Habit name is required"}), 400
+    
+    if len(new_name) > 64:
+        return jsonify({"error": "Habit name cannot exceed 64 characters"}), 400
+
 
     habit.name = new_name.strip()
     db.session.commit()

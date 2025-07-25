@@ -103,5 +103,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#000",
     flexShrink: 1,
+    flexGrow: 1,
+    maxWidth: "85%",
   },
 });

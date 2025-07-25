@@ -9,9 +9,15 @@ import Toast from "react-native-toast-message";
 export default function CreateHabitScreen() {
   const navigation = useNavigation();
   const [name, setName] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   const handleCreateHabit = async () => {
     if (!name.trim()) return;
+
+    if (name.length > 64) {
+      setError("Habit name cannot exceed 64 characters");
+      return;
+    }
 
     try {
       await api.post("/habits", {
@@ -19,6 +25,7 @@ export default function CreateHabitScreen() {
         start_date: format(new Date(), "yyyy-MM-dd"),
       });
       setName("");
+      setError(null);
       Toast.show({
         type: "success",
         text1: "New habit added",
@@ -34,12 +41,23 @@ export default function CreateHabitScreen() {
       <View style={styles.card}>
         <Text style={styles.label}>New Habit</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, error && styles.inputError]}
           value={name}
-          onChangeText={setName}
+          onChangeText={(text) => {
+            setName(text);
+            if (text.length > 64) {
+              setError("Habit name cannot exceed 64 characters");
+            } else {
+              setError(null);
+            }
+          }}
           placeholder="e.g. Read 30 mins, Track calories"
           placeholderTextColor="#aaa"
+          maxLength={128}
         />
+
+        {error && <Text style={styles.errorMessage}>{error}</Text>}
+
         <PrimaryButton title="Create habit" onPress={handleCreateHabit} />
       </View>
     </View>
@@ -79,5 +97,14 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     fontSize: 16,
     color: "#000",
+  },
+  inputError: {
+    borderColor: "#c0392b",
+  },
+  errorMessage: {
+    color: "#c0392b",
+    fontSize: 13,
+    marginBottom: 14,
+    textAlign: "left",
   },
 });
