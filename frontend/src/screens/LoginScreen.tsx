@@ -23,11 +23,13 @@ const LoginScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const navigation = useNavigation<NavigationProp>();
   const { login } = useAuth();
 
   const handleLogin = async () => {
+    setLoading(true);
     try {
       const res = await api.post("/auth/login", { email, password });
       await login(res.data.access_token);
@@ -36,6 +38,8 @@ const LoginScreen = () => {
         "Login Failed",
         err.response?.data?.error || "Something went wrong"
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -71,6 +75,7 @@ const LoginScreen = () => {
           onChangeText={setEmail}
           autoCapitalize="none"
           keyboardType="email-address"
+          editable={!loading}
         />
 
         <View style={styles.passwordWrapper}>
@@ -81,6 +86,7 @@ const LoginScreen = () => {
             value={password}
             onChangeText={setPassword}
             secureTextEntry={!showPassword}
+            editable={!loading}
           />
           <Pressable onPress={() => setShowPassword((prev) => !prev)}>
             <Ionicons
@@ -91,8 +97,18 @@ const LoginScreen = () => {
           </Pressable>
         </View>
 
-        <PrimaryButton title="Log In" onPress={handleLogin} />
-        <PrimaryButton title="Dev Login" onPress={handleDevLogin} />
+        <PrimaryButton title="Log In" onPress={handleLogin} loading={loading} />
+        <PrimaryButton
+          title="Dev Login"
+          onPress={handleDevLogin}
+          loading={loading}
+        />
+
+        {loading && (
+          <Text style={styles.wakeNotice}>
+            First load may take up to a minute if the server is waking up.
+          </Text>
+        )}
 
         <Pressable onPress={() => navigation.navigate("Register")}>
           <Text style={styles.link}>Don’t have an account? Register</Text>
@@ -152,6 +168,13 @@ const styles = StyleSheet.create({
     height: 50,
     color: "#000",
     fontSize: 16,
+  },
+  wakeNotice: {
+    marginTop: 12,
+    fontSize: 13,
+    color: "#666",
+    textAlign: "center",
+    lineHeight: 18,
   },
   link: {
     color: "#000",

@@ -25,6 +25,7 @@ import HabitItem from "../components/HabitItem";
 import HeaderNav from "../components/HeaderNav";
 import PrimaryButton from "../components/PrimaryButton";
 import { useAuth } from "../contexts/AuthContext";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Main">;
 
@@ -33,16 +34,22 @@ export default function Home() {
   const [habits, setHabits] = useState<Habit[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [showHabitMenu, setShowHabitMenu] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const { isLoggedIn } = useAuth();
   const navigation = useNavigation<NavigationProp>();
 
-  const loadHabits = async () => {
+  const loadHabits = async (isInitial = false) => {
+    if (isInitial) setLoading(true);
+
     try {
       const summary = await getHabitSummary(format(date, "yyyy-MM-dd"));
       setHabits(summary);
     } catch (err) {
       console.error("Failed to load habits:", err);
+    } finally {
+      if (isInitial) setLoading(false);
     }
   };
 
@@ -54,7 +61,7 @@ export default function Home() {
 
   useFocusEffect(
     React.useCallback(() => {
-      loadHabits();
+      loadHabits(true);
     }, [isLoggedIn, date])
   );
 
@@ -89,12 +96,15 @@ export default function Home() {
           text: "Delete",
           style: "destructive",
           onPress: async () => {
+            setDeletingId(habitId);
             try {
               await deleteHabit(habitId);
               setHabits((prev) => prev.filter((h) => h.id !== habitId));
               setShowHabitMenu(null);
             } catch (err) {
               console.error("Failed to delete habit:", err);
+            } finally {
+              setDeletingId(null);
             }
           },
         },
@@ -120,7 +130,10 @@ export default function Home() {
           <Text style={styles.objectivesTitle}>
             {format(date, "EEEE")} Habits
           </Text>
-          {habits.length > 0 ? (
+
+          {loading ? (
+            <LoadingSpinner size="large" />
+          ) : habits.length > 0 ? (
             habits.map((item) => (
               <HabitItem
                 key={item.id}
@@ -155,6 +168,7 @@ export default function Home() {
           <Pressable onPress={() => {}} style={styles.menuBox}>
             <PrimaryButton
               title="Edit Habit"
+              disabled={deletingId !== null}
               onPress={() => {
                 Alert.alert("Edit feature not implemented yet.");
                 setShowHabitMenu(null);
@@ -163,6 +177,8 @@ export default function Home() {
             <PrimaryButton
               title="Delete Habit"
               onPress={() => handleDeleteHabit(showHabitMenu)}
+              loading={deletingId === showHabitMenu}
+              disabled={deletingId !== null}
               style={{
                 backgroundColor: "#fff",
                 borderWidth: 1,

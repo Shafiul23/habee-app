@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { Alert, StyleSheet, Text, View } from "react-native";
 import PrimaryButton from "../components/PrimaryButton";
 import { useAuth } from "../contexts/AuthContext";
+import { se } from "date-fns/locale";
 
 export default function SettingsScreen() {
+  const [loadingDelete, setLoadingDelete] = useState(false);
   const { logout, deleteAccount } = useAuth();
 
   const handleLogout = async () => {
@@ -24,11 +26,14 @@ export default function SettingsScreen() {
           text: "Delete",
           style: "destructive",
           onPress: async () => {
+            setLoadingDelete(true);
             try {
               await deleteAccount();
             } catch (error) {
               console.error("Account deletion failed:", error);
               Alert.alert("Error", "Could not delete account.");
+            } finally {
+              setLoadingDelete(false);
             }
           },
         },
@@ -45,6 +50,8 @@ export default function SettingsScreen() {
         onPress={handleDeleteAccount}
         style={styles.deleteButton}
         textStyle={{ color: "red" }}
+        disabled={loadingDelete}
+        loading={loadingDelete}
       />
     </View>
   );

@@ -5,24 +5,29 @@ import { CalendarSummary, getCalendarSummary } from "../../lib/api";
 import CalendarGrid from "../components/CalendarGrid";
 import HeaderNav from "../components/HeaderNav";
 import Legend from "../components/Legend";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 export default function CalendarScreen() {
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [calendarData, setCalendarData] = useState<CalendarSummary>({});
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const fetchSummary = async () => {
+  const fetchSummary = async (isInitial = false) => {
+    if (isInitial) setLoading(true);
     try {
       const monthString = format(selectedMonth, "yyyy-MM");
       const data: CalendarSummary = await getCalendarSummary(monthString);
       setCalendarData(data);
     } catch (err) {
       console.error("Failed to fetch calendar summary:", err);
+    } finally {
+      if (isInitial) setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchSummary();
+    fetchSummary(true);
   }, [selectedMonth]);
 
   const handlePrevMonth = () => {
@@ -52,9 +57,14 @@ export default function CalendarScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        <CalendarGrid month={selectedMonth} summary={calendarData} />
-
-        <Legend />
+        {loading ? (
+          <LoadingSpinner />
+        ) : (
+          <>
+            <CalendarGrid month={selectedMonth} summary={calendarData} />
+            <Legend />
+          </>
+        )}
       </ScrollView>
     </>
   );

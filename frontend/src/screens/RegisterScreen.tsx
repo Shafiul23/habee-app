@@ -19,6 +19,7 @@ export default function RegisterScreen({ navigation }: { navigation: any }) {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const { register } = useAuth();
 
@@ -28,6 +29,7 @@ export default function RegisterScreen({ navigation }: { navigation: any }) {
       return;
     }
 
+    setLoading(true);
     try {
       await register(email, password);
       Alert.alert("Success", "Account created. You can now log in.");
@@ -37,6 +39,8 @@ export default function RegisterScreen({ navigation }: { navigation: any }) {
         "Registration Failed",
         err.response?.data?.error || "Something went wrong"
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -56,6 +60,7 @@ export default function RegisterScreen({ navigation }: { navigation: any }) {
           onChangeText={setEmail}
           autoCapitalize="none"
           keyboardType="email-address"
+          editable={!loading}
         />
 
         <View style={styles.passwordWrapper}>
@@ -66,6 +71,7 @@ export default function RegisterScreen({ navigation }: { navigation: any }) {
             value={password}
             onChangeText={setPassword}
             secureTextEntry={!showPassword}
+            editable={!loading}
           />
           <Pressable onPress={() => setShowPassword((prev) => !prev)}>
             <Ionicons
@@ -84,6 +90,7 @@ export default function RegisterScreen({ navigation }: { navigation: any }) {
             value={confirmPassword}
             onChangeText={setConfirmPassword}
             secureTextEntry={!showConfirm}
+            editable={!loading}
           />
           <Pressable onPress={() => setShowConfirm((prev) => !prev)}>
             <Ionicons
@@ -94,7 +101,17 @@ export default function RegisterScreen({ navigation }: { navigation: any }) {
           </Pressable>
         </View>
 
-        <PrimaryButton title="Register" onPress={handleRegister} />
+        <PrimaryButton
+          title="Register"
+          onPress={handleRegister}
+          loading={loading}
+        />
+
+        {loading && (
+          <Text style={styles.wakeNotice}>
+            First load may take up to a minute if the server is waking up.
+          </Text>
+        )}
 
         <Pressable onPress={() => navigation.navigate("Login")}>
           <Text style={styles.link}>Already have an account? Log in</Text>
@@ -154,6 +171,13 @@ const styles = StyleSheet.create({
     height: 50,
     color: "#000",
     fontSize: 16,
+  },
+  wakeNotice: {
+    marginTop: 12,
+    fontSize: 13,
+    color: "#666",
+    textAlign: "center",
+    lineHeight: 18,
   },
   link: {
     color: "#000",

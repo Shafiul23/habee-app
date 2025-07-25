@@ -13,12 +13,14 @@ import HeaderNav from "../components/HeaderNav";
 import WeeklyGrid from "../components/WeeklyGrid";
 import { getLayoutConstants } from "../constants/layout";
 import { usePaginatedHabits } from "../hooks/usePaginatedHabits";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 export default function GridScreen() {
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [habits, setHabits] = useState<Habit[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const { pageCount, habitsToDisplay } = usePaginatedHabits(
     habits,
@@ -28,17 +30,20 @@ export default function GridScreen() {
     habitsToDisplay.length
   );
 
-  const fetchHabits = async () => {
+  const fetchHabits = async (isInitial = false) => {
+    if (isInitial) setLoading(true);
     try {
       const data = await getHabits();
       setHabits(data);
     } catch (err) {
       console.error("Failed to fetch habits:", err);
+    } finally {
+      if (isInitial) setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchHabits();
+    fetchHabits(true);
   }, []);
 
   const onRefresh = async () => {
@@ -70,63 +75,67 @@ export default function GridScreen() {
         onPrev={handlePrevMonth}
         onNext={handleNextMonth}
       />
-      <View style={styles.container}>
-        <View style={styles.headerRow}>
-          <View
-            style={[styles.cell, styles.headerCell, { width: dayLabelWidth }]}
+      {loading ? (
+        <LoadingSpinner />
+      ) : (
+        <View style={styles.container}>
+          <View style={styles.headerRow}>
+            <View
+              style={[styles.cell, styles.headerCell, { width: dayLabelWidth }]}
+            >
+              <Text style={styles.headerText}>Day</Text>
+            </View>
+            <View style={styles.row}>
+              {habitsToDisplay.map((habit) => (
+                <View
+                  key={habit.id}
+                  style={[
+                    styles.cell,
+                    styles.headerCell,
+                    { width: cellSize, height: cellSize },
+                  ]}
+                >
+                  <Text numberOfLines={2} style={styles.habitName}>
+                    {habit.name}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
           >
-            <Text style={styles.headerText}>Day</Text>
-          </View>
-          <View style={styles.row}>
-            {habitsToDisplay.map((habit) => (
-              <View
-                key={habit.id}
-                style={[
-                  styles.cell,
-                  styles.headerCell,
-                  { width: cellSize, height: cellSize },
-                ]}
-              >
-                <Text numberOfLines={2} style={styles.habitName}>
-                  {habit.name}
-                </Text>
-              </View>
-            ))}
-          </View>
-        </View>
+            {habits.length > 0 ? (
+              <WeeklyGrid
+                habits={habits}
+                month={selectedMonth}
+                currentPage={currentPage}
+                cellSize={cellSize}
+                dayLabelWidth={dayLabelWidth}
+              />
+            ) : (
+              <Text style={styles.emptyText}>
+                No habits to display. Add habits to view your monthly progress.
+              </Text>
+            )}
+          </ScrollView>
 
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-        >
-          {habits.length > 0 ? (
-            <WeeklyGrid
-              habits={habits}
-              month={selectedMonth}
-              currentPage={currentPage}
-              cellSize={cellSize}
-              dayLabelWidth={dayLabelWidth}
-            />
-          ) : (
-            <Text style={styles.emptyText}>
-              No habits to display. Add habits to view your monthly progress.
-            </Text>
+          {currentPage < pageCount - 1 && (
+            <Pressable style={styles.fabRight} onPress={handleRight}>
+              <Text style={styles.navText}>→</Text>
+            </Pressable>
           )}
-        </ScrollView>
-
-        {currentPage < pageCount - 1 && (
-          <Pressable style={styles.fabRight} onPress={handleRight}>
-            <Text style={styles.navText}>→</Text>
-          </Pressable>
-        )}
-        {currentPage > 0 && (
-          <Pressable style={styles.fabLeft} onPress={handleLeft}>
-            <Text style={styles.navText}>←</Text>
-          </Pressable>
-        )}
-      </View>
+          {currentPage > 0 && (
+            <Pressable style={styles.fabLeft} onPress={handleLeft}>
+              <Text style={styles.navText}>←</Text>
+            </Pressable>
+          )}
+        </View>
+      )}
     </>
   );
 }

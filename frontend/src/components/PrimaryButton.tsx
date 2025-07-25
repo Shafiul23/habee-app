@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ViewStyle,
   TextStyle,
+  ActivityIndicator,
 } from "react-native";
 
 type Props = {
@@ -13,6 +14,7 @@ type Props = {
   style?: ViewStyle;
   textStyle?: TextStyle;
   disabled?: boolean;
+  loading?: boolean;
 };
 
 export default function PrimaryButton({
@@ -21,14 +23,23 @@ export default function PrimaryButton({
   style,
   textStyle,
   disabled = false,
+  loading = false,
 }: Props) {
   return (
     <Pressable
       onPress={onPress}
-      disabled={disabled}
-      style={[styles.button, disabled && styles.disabledButton, style]}
+      disabled={disabled || loading}
+      style={[
+        styles.button,
+        (disabled || loading) && styles.disabledButton,
+        style,
+      ]}
     >
-      <Text style={[styles.buttonText, textStyle]}>{title}</Text>
+      {loading ? (
+        <ActivityIndicator color="#000" />
+      ) : (
+        <Text style={[styles.buttonText, textStyle]}>{title}</Text>
+      )}
     </Pressable>
   );
 }

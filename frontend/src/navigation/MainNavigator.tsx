@@ -1,4 +1,4 @@
-// MainNavigator.tsx
+// frontend/src/navigation/MainNavigator.tsx
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import React from "react";
 import Ionicons from "react-native-vector-icons/Ionicons";
