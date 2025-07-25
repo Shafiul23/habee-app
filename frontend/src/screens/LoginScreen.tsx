@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -16,6 +15,8 @@ import { useAuth } from "../contexts/AuthContext";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../types";
 import { useNavigation } from "@react-navigation/native";
+import Toast from "react-native-toast-message";
+import { isValidEmail } from "../utils/validation";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Main">;
 
@@ -29,21 +30,36 @@ const LoginScreen = () => {
   const { login } = useAuth();
 
   const handleLogin = async () => {
+    if (!isValidEmail(email)) {
+      Toast.show({
+        type: "error",
+        text1: "Invalid Email",
+        text2: "Enter a valid email address.",
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await api.post("/auth/login", { email, password });
       await login(res.data.access_token);
+
+      Toast.show({
+        type: "success",
+        text1: "Welcome back!",
+      });
     } catch (err: any) {
-      Alert.alert(
-        "Login Failed",
-        err.response?.data?.error || "Something went wrong"
-      );
+      const message = err.response?.data?.error || "Something went wrong";
+      Toast.show({
+        type: "error",
+        text1: "Login Failed",
+        text2: message,
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  // DEV LOGIN - for testing purposes
   const handleDevLogin = async () => {
     try {
       const res = await api.post("/auth/login", {
@@ -51,11 +67,17 @@ const LoginScreen = () => {
         password: "secret123",
       });
       await login(res.data.access_token);
+
+      Toast.show({
+        type: "success",
+        text1: "Dev Login Success",
+      });
     } catch (err: any) {
-      Alert.alert(
-        "Login Failed",
-        err.response?.data?.error || "Something went wrong"
-      );
+      Toast.show({
+        type: "error",
+        text1: "Dev Login Failed",
+        text2: err.response?.data?.error || "Something went wrong",
+      });
     }
   };
 

@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from app.extensions import db
 from app.models.user import User
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+import re
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -13,6 +14,16 @@ def register():
 
     if not email or not password:
         return jsonify({"error": "Email and password are required"}), 400
+    
+    email_regex = r'^[^@\s]+@[^@\s]+\.[^@\s]+$'
+    if not re.match(email_regex, email):
+        return jsonify({"error": "Invalid email address"}), 400
+    
+    password_regex = r"^(?=.*[A-Z])(?=.*\d).{6,}$"
+    if not re.match(password_regex, password):
+        return jsonify({
+            "error": "Password must be at least 6 characters, include 1 capital and 1 number"
+        }), 400
 
     if User.query.filter_by(email=email).first():
         return jsonify({"error": "User already exists"}), 400
