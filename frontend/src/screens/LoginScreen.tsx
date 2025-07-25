@@ -135,6 +135,20 @@ const LoginScreen = () => {
         <Pressable onPress={() => navigation.navigate("Register")}>
           <Text style={styles.link}>Don’t have an account? Register</Text>
         </Pressable>
+        <Pressable onPress={() => navigation.navigate("ForgotPassword")}>
+          <Text style={styles.link}>Forgot password?</Text>
+        </Pressable>
+        <Pressable
+          onPress={() => {
+            navigation.navigate("ResetPassword", {
+              token:
+                // "your-dev-token-here"
+                "b9e6c739-9a1e-4d76-a321-2f72bacd7f25",
+            });
+          }}
+        >
+          <Text style={styles.link}>Reset Password</Text>
+        </Pressable>
       </View>
     </KeyboardAvoidingView>
   );

@@ -5,6 +5,8 @@ export type RootStackParamList = {
   Register: undefined;
   CreateHabit: undefined;
   EditHabit: { habitId: number; currentName: string };
+  ForgotPassword: undefined;
+  ResetPassword: { token: string };
 };
 
 export type TabParamList = {

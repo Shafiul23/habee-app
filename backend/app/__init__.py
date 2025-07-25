@@ -19,6 +19,6 @@ def create_app():
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(habits_bp, url_prefix="/api/habits")
 
-    from app.models import user, habit, log
+    from app.models import user, habit, log, reset_token
 
     return app

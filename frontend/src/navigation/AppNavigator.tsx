@@ -9,6 +9,8 @@ import CreateHabitScreen from "../screens/CreateHabitScreen";
 import { RootStackParamList } from "../../types";
 import RegisterScreen from "../screens/RegisterScreen";
 import EditHabitScreen from "../screens/EditHabitScreen";
+import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
+import ResetPasswordScreen from "../screens/ResetPasswordScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -36,6 +38,15 @@ export default function AppNavigator() {
           <>
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="Register" component={RegisterScreen} />
+            <Stack.Screen
+              name="ForgotPassword"
+              component={ForgotPasswordScreen}
+            />
+            <Stack.Screen
+              name="ResetPassword"
+              component={ResetPasswordScreen}
+              options={{ presentation: "modal" }}
+            />
           </>
         )}
       </Stack.Navigator>
