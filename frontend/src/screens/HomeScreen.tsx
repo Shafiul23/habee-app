@@ -25,7 +25,7 @@ import HabitItem from "../components/HabitItem";
 import HabitMenu from "../components/HabitMenu";
 import HeaderNav from "../components/HeaderNav";
 import LoadingSpinner from "../components/LoadingSpinner";
-import SwipeableDayView from "../components/SwipeableDayView";
+import SwipeableDayView from "../components/SwipeableView";
 import { useAuth } from "../contexts/AuthContext";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Main">;

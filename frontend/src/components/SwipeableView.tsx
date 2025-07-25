@@ -1,5 +1,5 @@
-// src/components/SwipeableDayView.tsx
-import React, { ReactNode, useEffect } from "react";
+// src/components/SwipeableView.tsx
+import React, { ReactNode } from "react";
 import { Dimensions, StyleSheet } from "react-native";
 import Animated, {
   useSharedValue,
@@ -22,7 +22,7 @@ type Props = {
   onSwipeRight: () => void;
 };
 
-export default function SwipeableDayView({
+export default function SwipeableView({
   children,
   onSwipeLeft,
   onSwipeRight,
@@ -45,7 +45,7 @@ export default function SwipeableDayView({
       } else if (event.translationX > SWIPE_THRESHOLD) {
         runOnJS(onSwipeRight)();
       }
-      translateX.value = withTiming(0); // reset position
+      translateX.value = withTiming(0);
     },
   });
 
