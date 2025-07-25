@@ -21,6 +21,7 @@ export default function GridScreen() {
   const [currentPage, setCurrentPage] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [expandedHabitId, setExpandedHabitId] = useState<number | null>(null);
 
   const { pageCount, habitsToDisplay } = usePaginatedHabits(
     habits,
@@ -87,18 +88,39 @@ export default function GridScreen() {
             </View>
             <View style={styles.row}>
               {habitsToDisplay.map((habit) => (
-                <View
+                <Pressable
                   key={habit.id}
-                  style={[
-                    styles.cell,
-                    styles.headerCell,
-                    { width: cellSize, height: cellSize },
-                  ]}
+                  onPress={() =>
+                    setExpandedHabitId((prev) =>
+                      prev === habit.id ? null : habit.id
+                    )
+                  }
                 >
-                  <Text numberOfLines={2} style={styles.habitName}>
-                    {habit.name}
-                  </Text>
-                </View>
+                  <View
+                    style={[
+                      styles.cell,
+                      styles.headerCell,
+                      {
+                        width: cellSize,
+                        height:
+                          expandedHabitId === habit.id
+                            ? cellSize * 1.8
+                            : cellSize,
+                        backgroundColor:
+                          expandedHabitId === habit.id ? "#f6f6f6" : "#fff",
+                      },
+                    ]}
+                  >
+                    <Text
+                      numberOfLines={
+                        expandedHabitId === habit.id ? undefined : 2
+                      }
+                      style={styles.habitName}
+                    >
+                      {habit.name}
+                    </Text>
+                  </View>
+                </Pressable>
               ))}
             </View>
           </View>
