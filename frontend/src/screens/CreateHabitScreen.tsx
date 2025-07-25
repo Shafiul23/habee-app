@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 import api from "../../lib/api";
 import PrimaryButton from "../components/PrimaryButton";
+import Toast from "react-native-toast-message";
 
 export default function CreateHabitScreen() {
   const navigation = useNavigation();
@@ -18,6 +19,10 @@ export default function CreateHabitScreen() {
         start_date: format(new Date(), "yyyy-MM-dd"),
       });
       setName("");
+      Toast.show({
+        type: "success",
+        text1: "New habit added",
+      });
       navigation.goBack();
     } catch (err) {
       console.error("Failed to create habit:", err);
