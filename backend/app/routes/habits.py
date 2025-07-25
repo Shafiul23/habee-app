@@ -46,6 +46,32 @@ def create_habit():
         }
     })
 
+@habits_bp.route("/<int:habit_id>", methods=["PUT"])
+@jwt_required()
+def update_habit(habit_id):
+    user_id = get_jwt_identity()
+    data = request.get_json()
+
+    habit = Habit.query.filter_by(id=habit_id, user_id=user_id).first()
+    if not habit:
+        return jsonify({"error": "Habit not found"}), 404
+
+    new_name = data.get("name")
+    if not new_name:
+        return jsonify({"error": "Habit name is required"}), 400
+
+    habit.name = new_name.strip()
+    db.session.commit()
+
+    return jsonify({
+        "message": "Habit updated successfully",
+        "habit": {
+            "id": habit.id,
+            "name": habit.name,
+            "start_date": habit.start_date.isoformat()
+        }
+    })
+
 @habits_bp.route("/<int:habit_id>", methods=["DELETE"])
 @jwt_required()
 def delete_habit(habit_id):

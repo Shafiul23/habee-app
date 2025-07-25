@@ -26,6 +26,7 @@ import HeaderNav from "../components/HeaderNav";
 import PrimaryButton from "../components/PrimaryButton";
 import { useAuth } from "../contexts/AuthContext";
 import LoadingSpinner from "../components/LoadingSpinner";
+import HabitMenu from "../components/HabitMenu";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Main">;
 
@@ -161,33 +162,21 @@ export default function Home() {
       </Pressable>
 
       {showHabitMenu !== null && (
-        <Pressable
-          style={styles.modalOverlay}
-          onPress={() => setShowHabitMenu(null)}
-        >
-          <Pressable onPress={() => {}} style={styles.menuBox}>
-            <PrimaryButton
-              title="Edit Habit"
-              disabled={deletingId !== null}
-              onPress={() => {
-                Alert.alert("Edit feature not implemented yet.");
-                setShowHabitMenu(null);
-              }}
-            />
-            <PrimaryButton
-              title="Delete Habit"
-              onPress={() => handleDeleteHabit(showHabitMenu)}
-              loading={deletingId === showHabitMenu}
-              disabled={deletingId !== null}
-              style={{
-                backgroundColor: "#fff",
-                borderWidth: 1,
-                borderColor: "#e0e0e0",
-              }}
-              textStyle={{ color: "red" }}
-            />
-          </Pressable>
-        </Pressable>
+        <HabitMenu
+          onClose={() => setShowHabitMenu(null)}
+          onEdit={() => {
+            const habit = habits.find((h) => h.id === showHabitMenu);
+            if (!habit) return;
+
+            setShowHabitMenu(null);
+            navigation.navigate("EditHabit", {
+              habitId: habit.id,
+              currentName: habit.name,
+            });
+          }}
+          onDelete={() => handleDeleteHabit(showHabitMenu)}
+          deleting={deletingId === showHabitMenu}
+        />
       )}
     </>
   );

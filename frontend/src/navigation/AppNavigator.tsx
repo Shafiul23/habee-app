@@ -8,6 +8,7 @@ import MainNavigator from "./MainNavigator";
 import CreateHabitScreen from "../screens/CreateHabitScreen";
 import { RootStackParamList } from "../../types";
 import RegisterScreen from "../screens/RegisterScreen";
+import EditHabitScreen from "../screens/EditHabitScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -23,6 +24,11 @@ export default function AppNavigator() {
             <Stack.Screen
               name="CreateHabit"
               component={CreateHabitScreen}
+              options={{ presentation: "modal" }}
+            />
+            <Stack.Screen
+              name="EditHabit"
+              component={EditHabitScreen}
               options={{ presentation: "modal" }}
             />
           </>

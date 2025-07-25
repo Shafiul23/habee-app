@@ -74,6 +74,10 @@ export const undoHabit = async (habitId: number, date: string) => {
   await api.post(`/habits/${habitId}/unlog`);
 };
 
+export const editHabit = async (id: number, name: string) => {
+  return await api.put(`/habits/${id}`, { name });
+};
+
 export const deleteHabit = async (id: number) => {
   return await api.delete(`/habits/${id}`);
 };
