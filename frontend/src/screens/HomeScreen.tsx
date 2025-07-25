@@ -1,9 +1,9 @@
 // frontend/src/screens/HomeScreen.tsx
 import { Ionicons } from "@expo/vector-icons";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { addDays, format, isToday, subDays } from "date-fns";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   Pressable,
@@ -22,11 +22,11 @@ import {
 } from "../../lib/api";
 import { RootStackParamList } from "../../types";
 import HabitItem from "../components/HabitItem";
-import HeaderNav from "../components/HeaderNav";
-import PrimaryButton from "../components/PrimaryButton";
-import { useAuth } from "../contexts/AuthContext";
-import LoadingSpinner from "../components/LoadingSpinner";
 import HabitMenu from "../components/HabitMenu";
+import HeaderNav from "../components/HeaderNav";
+import LoadingSpinner from "../components/LoadingSpinner";
+import SwipeableDayView from "../components/SwipeableDayView";
+import { useAuth } from "../contexts/AuthContext";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Main">;
 
@@ -41,11 +41,10 @@ export default function Home() {
   const { isLoggedIn } = useAuth();
   const navigation = useNavigation<NavigationProp>();
 
-  const loadHabits = async (isInitial = false) => {
+  const loadHabits = async (isInitial = false, givenDate = date) => {
     if (isInitial) setLoading(true);
-
     try {
-      const summary = await getHabitSummary(format(date, "yyyy-MM-dd"));
+      const summary = await getHabitSummary(format(givenDate, "yyyy-MM-dd"));
       setHabits(summary);
     } catch (err) {
       console.error("Failed to load habits:", err);
@@ -60,11 +59,9 @@ export default function Home() {
     setRefreshing(false);
   };
 
-  useFocusEffect(
-    React.useCallback(() => {
-      loadHabits(true);
-    }, [isLoggedIn, date])
-  );
+  useEffect(() => {
+    loadHabits(true, date);
+  }, [date]);
 
   const handleToggleHabit = async (id: number, completed = false) => {
     try {
@@ -82,9 +79,16 @@ export default function Home() {
     }
   };
 
-  const goToPrevDay = () => setDate(subDays(date, 1));
+  const goToPrevDay = () => {
+    setDate((prev) => subDays(prev, 1));
+  };
   const goToNextDay = () => {
-    if (!isToday(date)) setDate(addDays(date, 1));
+    setDate((prev) => {
+      if (!isToday(prev)) {
+        return addDays(prev, 1);
+      }
+      return prev;
+    });
   };
 
   const handleDeleteHabit = (habitId: number) => {
@@ -121,38 +125,40 @@ export default function Home() {
         onNext={goToNextDay}
         mode="day"
       />
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
-        <View style={styles.innerContainer}>
-          <Text style={styles.objectivesTitle}>
-            {format(date, "EEEE")} Habits
-          </Text>
+      <SwipeableDayView onSwipeLeft={goToNextDay} onSwipeRight={goToPrevDay}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
+          <View style={styles.innerContainer}>
+            <Text style={styles.objectivesTitle}>
+              {format(date, "EEEE")} Habits
+            </Text>
 
-          {loading ? (
-            <LoadingSpinner size="large" />
-          ) : habits.length > 0 ? (
-            habits.map((item) => (
-              <HabitItem
-                key={item.id}
-                item={item}
-                onToggle={() => handleToggleHabit(item.id, item.completed)}
-                onShowMenu={() => setShowHabitMenu(item.id)}
-              />
-            ))
-          ) : (
-            <View style={styles.emptyWrapper}>
-              <Text style={styles.emptyText}>
-                You haven’t added any habits yet.{"\n"}Tap the + button below to
-                get started.
-              </Text>
-            </View>
-          )}
-        </View>
-      </ScrollView>
+            {loading ? (
+              <LoadingSpinner size="large" />
+            ) : habits.length > 0 ? (
+              habits.map((item) => (
+                <HabitItem
+                  key={item.id}
+                  item={item}
+                  onToggle={() => handleToggleHabit(item.id, item.completed)}
+                  onShowMenu={() => setShowHabitMenu(item.id)}
+                />
+              ))
+            ) : (
+              <View style={styles.emptyWrapper}>
+                <Text style={styles.emptyText}>
+                  You haven’t added any habits yet.{"\n"}Tap the + button below
+                  to get started.
+                </Text>
+              </View>
+            )}
+          </View>
+        </ScrollView>
+      </SwipeableDayView>
 
       <Pressable
         style={styles.fab}
