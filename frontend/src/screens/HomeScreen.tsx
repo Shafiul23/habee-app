@@ -1,9 +1,9 @@
 // frontend/src/screens/HomeScreen.tsx
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { addDays, format, isToday, subDays } from "date-fns";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   Alert,
   Pressable,
@@ -59,9 +59,11 @@ export default function Home() {
     setRefreshing(false);
   };
 
-  useEffect(() => {
-    loadHabits(true, date);
-  }, [date]);
+  useFocusEffect(
+    useCallback(() => {
+      loadHabits(true, date);
+    }, [date])
+  );
 
   const handleToggleHabit = async (id: number, completed = false) => {
     try {
