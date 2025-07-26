@@ -5,9 +5,13 @@ node_modules/
 
 # Expo
 .expo/
+.expo-shared/  
 dist/
 web-build/
 expo-env.d.ts
+
+# Cache
+*.expo  
 
 # Native
 .kotlin/
@@ -30,8 +34,14 @@ yarn-error.*
 .DS_Store
 *.pem
 
+# Env
+.env    
+
 # local env files
 .env*.local
 
 # typescript
 *.tsbuildinfo
+
+# System
+*.DS_Store

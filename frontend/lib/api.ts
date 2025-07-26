@@ -1,9 +1,10 @@
 // frontend/lib/api.ts
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
+import { API_URL } from "@env";
 
 const api = axios.create({
-  baseURL: "http://192.168.1.118:5050/api",
+  baseURL: API_URL,
   withCredentials: true,
 });
 
