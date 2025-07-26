@@ -1,10 +1,10 @@
-// frontend/src/screens/EditHabitScreen.tsx
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { AxiosError } from "axios";
 import React, { useState } from "react";
-import { View, Text, TextInput, StyleSheet } from "react-native";
-import { useRoute, useNavigation } from "@react-navigation/native";
-import Toast from "react-native-toast-message";
+import { StyleSheet, Text, TextInput, View } from "react-native";
+import { editHabit } from "../../lib/api";
 import PrimaryButton from "../components/PrimaryButton";
-import api, { editHabit } from "../../lib/api";
+import { isValidHabit } from "../utils/validation";
 
 export default function EditHabitScreen() {
   const route = useRoute<any>();
@@ -13,18 +13,26 @@ export default function EditHabitScreen() {
 
   const [name, setName] = useState(currentName);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleUpdate = async () => {
-    if (!name.trim()) return;
+    const { valid, error: validationError } = isValidHabit(name);
+
+    if (!valid) {
+      setError(validationError || "Invalid habit name");
+      return;
+    }
+
     setLoading(true);
 
     try {
       await editHabit(habitId, name.trim());
-      Toast.show({ type: "success", text1: "Habit updated" });
       navigation.goBack();
     } catch (err) {
-      console.error("Failed to update habit:", err);
-      Toast.show({ type: "error", text1: "Failed to update habit" });
+      const error = err as AxiosError<{ error?: string }>;
+      const errorMsg = error?.response?.data?.error || "Please try again later";
+
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -35,12 +43,17 @@ export default function EditHabitScreen() {
       <View style={styles.card}>
         <Text style={styles.label}>Edit Habit</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, error && styles.inputError]}
           value={name}
-          onChangeText={setName}
+          onChangeText={(text) => {
+            setName(text);
+            setError(null);
+          }}
           placeholder="Habit name"
           placeholderTextColor="#aaa"
+          maxLength={128}
         />
+        {error && <Text style={styles.errorMessage}>{error}</Text>}
         <PrimaryButton
           title="Update"
           onPress={handleUpdate}
@@ -80,5 +93,14 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     fontSize: 16,
     color: "#000",
+  },
+  inputError: {
+    borderColor: "#c0392b",
+  },
+  errorMessage: {
+    color: "#c0392b",
+    fontSize: 13,
+    marginBottom: 14,
+    textAlign: "left",
   },
 });

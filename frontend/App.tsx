@@ -22,8 +22,8 @@ export default function App() {
       <SafeAreaProvider>
         <AuthProvider>
           <AppNavigator />
-          <Toast config={toastConfig} position="top" topOffset={50} />
         </AuthProvider>
+        <Toast config={toastConfig} position="top" topOffset={50} />
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

@@ -28,8 +28,18 @@ def create_habit():
     if not name:
         return jsonify({"error": "Habit name is required"}), 400
     
+    name = name.strip()
+    
     if len(name) > 64:
         return jsonify({"error": "Habit name cannot exceed 64 characters"}), 400
+
+    existing = Habit.query.filter(
+        db.func.lower(Habit.name) == name.lower(),
+        Habit.user_id == user_id
+    ).first()
+
+    if existing:
+        return jsonify({"error": "You already have a habit with this name"}), 400
 
     try:
         start_date = date.fromisoformat(start_date_str) if start_date_str else date.today()
@@ -62,12 +72,22 @@ def update_habit(habit_id):
     new_name = data.get("name")
     if not new_name:
         return jsonify({"error": "Habit name is required"}), 400
-    
+
+    new_name = new_name.strip()
+
     if len(new_name) > 64:
         return jsonify({"error": "Habit name cannot exceed 64 characters"}), 400
 
+    existing = Habit.query.filter(
+        db.func.lower(Habit.name) == new_name.lower(),
+        Habit.user_id == user_id,
+        Habit.id != habit_id
+    ).first()
 
-    habit.name = new_name.strip()
+    if existing:
+        return jsonify({"error": "You already have a habit with this name"}), 400
+
+    habit.name = new_name
     db.session.commit()
 
     return jsonify({
@@ -78,6 +98,7 @@ def update_habit(habit_id):
             "start_date": habit.start_date.isoformat()
         }
     })
+
 
 @habits_bp.route("/<int:habit_id>", methods=["DELETE"])
 @jwt_required()

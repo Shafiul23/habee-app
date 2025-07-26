@@ -4,35 +4,40 @@ import React, { useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 import api from "../../lib/api";
 import PrimaryButton from "../components/PrimaryButton";
-import Toast from "react-native-toast-message";
+import { isValidHabit } from "../utils/validation";
+import { AxiosError } from "axios";
 
 export default function CreateHabitScreen() {
   const navigation = useNavigation();
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleCreateHabit = async () => {
-    if (!name.trim()) return;
+    const { valid, error: validationError } = isValidHabit(name);
 
-    if (name.length > 64) {
-      setError("Habit name cannot exceed 64 characters");
+    if (!valid) {
+      setError(validationError || "Invalid habit name");
       return;
     }
+
+    setLoading(true);
 
     try {
       await api.post("/habits", {
         name: name.trim(),
         start_date: format(new Date(), "yyyy-MM-dd"),
       });
+
       setName("");
       setError(null);
-      Toast.show({
-        type: "success",
-        text1: "New habit added",
-      });
       navigation.goBack();
     } catch (err) {
-      console.error("Failed to create habit:", err);
+      const error = err as AxiosError<{ error?: string }>;
+      const errorMsg = error?.response?.data?.error || "Please try again later";
+      setError(errorMsg);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -45,20 +50,21 @@ export default function CreateHabitScreen() {
           value={name}
           onChangeText={(text) => {
             setName(text);
-            if (text.length > 64) {
-              setError("Habit name cannot exceed 64 characters");
-            } else {
-              setError(null);
-            }
+            setError(null);
           }}
           placeholder="e.g. Read 30 mins, Track calories"
           placeholderTextColor="#aaa"
           maxLength={128}
+          onBlur={() => setName(name.trim())}
         />
 
         {error && <Text style={styles.errorMessage}>{error}</Text>}
 
-        <PrimaryButton title="Create habit" onPress={handleCreateHabit} />
+        <PrimaryButton
+          title="Create habit"
+          onPress={handleCreateHabit}
+          loading={loading}
+        />
       </View>
     </View>
   );
