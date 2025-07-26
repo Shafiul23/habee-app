@@ -1,12 +1,18 @@
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import Constants from "expo-constants";
 import React, { useState } from "react";
-import { Alert, StyleSheet, Text, View } from "react-native";
+import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
+import { RootStackParamList } from "../../types";
 import PrimaryButton from "../components/PrimaryButton";
 import { useAuth } from "../contexts/AuthContext";
-import { se } from "date-fns/locale";
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Main">;
 
 export default function SettingsScreen() {
   const [loadingDelete, setLoadingDelete] = useState(false);
   const { logout, deleteAccount } = useAuth();
+  const navigation = useNavigation<NavigationProp>();
 
   const handleLogout = async () => {
     try {
@@ -42,18 +48,36 @@ export default function SettingsScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Settings</Text>
-      <PrimaryButton title="Log Out" onPress={handleLogout} />
-      <PrimaryButton
-        title="Delete Account"
-        onPress={handleDeleteAccount}
-        style={styles.deleteButton}
-        textStyle={{ color: "red" }}
-        disabled={loadingDelete}
-        loading={loadingDelete}
-      />
-    </View>
+    <ScrollView
+      contentContainerStyle={styles.scrollContent}
+      style={styles.container}
+    >
+      <View>
+        <Text style={styles.title}>Settings</Text>
+        <PrimaryButton
+          title="Notifications"
+          onPress={() => {
+            navigation.navigate("NotificationSettings");
+          }}
+        />
+        <PrimaryButton title="Support Azm" onPress={() => {}} />
+        <PrimaryButton title="Log Out" onPress={handleLogout} />
+        <PrimaryButton
+          title="Delete Account"
+          onPress={handleDeleteAccount}
+          style={styles.deleteButton}
+          textStyle={{ color: "red" }}
+          disabled={loadingDelete}
+          loading={loadingDelete}
+        />
+      </View>
+
+      <View>
+        <Text style={styles.versionText}>
+          Version {Constants.manifest?.version || "1.0.0"}
+        </Text>
+      </View>
+    </ScrollView>
   );
 }
 
@@ -63,7 +87,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     paddingTop: 80,
     paddingHorizontal: 20,
-    justifyContent: "flex-start",
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: "space-between",
   },
   title: {
     fontSize: 28,
@@ -76,5 +103,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#e0e0e0",
     marginTop: 16,
+  },
+  versionText: {
+    // display: "flex",
+    // justifyContent: "flex-end",
+    textAlign: "center",
+    fontSize: 14,
+    color: "#999",
+    marginTop: 40,
+    marginBottom: 20,
   },
 });

@@ -15,6 +15,7 @@ import PrimaryButton from "../components/PrimaryButton";
 import { useAuth } from "../contexts/AuthContext";
 import { isValidEmail, isValidPassword } from "../utils/validation";
 import Toast from "react-native-toast-message";
+import { requestNotificationPermissions } from "../../lib/requestNotificationPermissions";
 
 export default function RegisterScreen({ navigation }: { navigation: any }) {
   const [email, setEmail] = useState("");
@@ -54,6 +55,7 @@ export default function RegisterScreen({ navigation }: { navigation: any }) {
     setLoading(true);
     try {
       await register(email, password);
+      await requestNotificationPermissions();
       Toast.show({
         type: "success",
         text1: "Success",

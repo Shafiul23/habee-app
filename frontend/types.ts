@@ -7,6 +7,7 @@ export type RootStackParamList = {
   EditHabit: { habitId: number; currentName: string };
   ForgotPassword: undefined;
   ResetPassword: { token: string };
+  NotificationSettings: undefined;
 };
 
 export type TabParamList = {

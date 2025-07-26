@@ -17,6 +17,7 @@ import { RootStackParamList } from "../../types";
 import { useNavigation } from "@react-navigation/native";
 import Toast from "react-native-toast-message";
 import { isValidEmail } from "../utils/validation";
+import { requestNotificationPermissions } from "../../lib/requestNotificationPermissions";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Main">;
 
@@ -43,6 +44,7 @@ const LoginScreen = () => {
     try {
       const res = await api.post("/auth/login", { email, password });
       await login(res.data.access_token);
+      await requestNotificationPermissions();
 
       Toast.show({
         type: "success",

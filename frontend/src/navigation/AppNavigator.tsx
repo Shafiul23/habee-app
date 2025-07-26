@@ -11,6 +11,7 @@ import RegisterScreen from "../screens/RegisterScreen";
 import EditHabitScreen from "../screens/EditHabitScreen";
 import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
 import ResetPasswordScreen from "../screens/ResetPasswordScreen";
+import NotificationSettingsScreen from "../screens/NotificationSettingsScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -31,6 +32,11 @@ export default function AppNavigator() {
             <Stack.Screen
               name="EditHabit"
               component={EditHabitScreen}
+              options={{ presentation: "modal" }}
+            />
+            <Stack.Screen
+              name="NotificationSettings"
+              component={NotificationSettingsScreen}
               options={{ presentation: "modal" }}
             />
           </>
