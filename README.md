@@ -37,3 +37,8 @@ To run the app locally:
 - **Name**: A play on _“Habit”_ and _“Bee”_ — stay busy, stay consistent.
 
 ---
+
+## License
+
+This project is licensed under the **CC BY-NC 4.0** License.  
+See [`LICENSE`](./LICENSE) for details.
