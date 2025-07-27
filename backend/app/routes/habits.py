@@ -136,17 +136,23 @@ def log_habit(habit_id):
     if not habit:
         return jsonify({"error": "Habit not found"}), 404
 
-    today = date.today()
-    existing_log = HabitLog.query.filter_by(habit_id=habit_id, date=today).first()
+    data = request.get_json(silent=True) or {}
+    date_str = data.get("date")
+    try:
+        log_date = date.fromisoformat(date_str) if date_str else date.today()
+    except ValueError:
+        return jsonify({"error": "Invalid date format. Use YYYY-MM-DD"}), 400
+
+    existing_log = HabitLog.query.filter_by(habit_id=habit_id, date=log_date).first()
 
     if existing_log:
-        return jsonify({"message": "Habit already logged for today"}), 200
+        return jsonify({"message": "Habit already logged for this date"}), 200
 
-    log = HabitLog(habit_id=habit.id)
+    log = HabitLog(habit_id=habit.id, date=log_date)
     db.session.add(log)
     db.session.commit()
 
-    return jsonify({"message": "Habit logged for today"})
+    return jsonify({"message": "Habit logged"})
 
 
 @habits_bp.route("/<int:habit_id>/unlog", methods=["POST"])
@@ -158,16 +164,22 @@ def unlog_habit(habit_id):
     if not habit:
         return jsonify({"error": "Habit not found"}), 404
 
-    today = date.today()
-    log = HabitLog.query.filter_by(habit_id=habit.id, date=today).first()
+    data = request.get_json(silent=True) or {}
+    date_str = data.get("date")
+    try:
+        log_date = date.fromisoformat(date_str) if date_str else date.today()
+    except ValueError:
+        return jsonify({"error": "Invalid date format. Use YYYY-MM-DD"}), 400
+
+    log = HabitLog.query.filter_by(habit_id=habit.id, date=log_date).first()
 
     if not log:
-        return jsonify({"message": "No log found for today"}), 404
+        return jsonify({"message": "No log found for this date"}), 404
 
     db.session.delete(log)
     db.session.commit()
 
-    return jsonify({"message": "Habit log undone for today"})
+    return jsonify({"message": "Habit log undone"})
 
 
 @habits_bp.route("/log-summary", methods=["GET"])

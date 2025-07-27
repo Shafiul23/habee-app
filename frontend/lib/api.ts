@@ -68,11 +68,11 @@ export const getCalendarSummary = async (
 };
 
 export const logHabit = async (habitId: number, date: string) => {
-  await api.post(`/habits/${habitId}/log`);
+  await api.post(`/habits/${habitId}/log`, { date });
 };
 
 export const undoHabit = async (habitId: number, date: string) => {
-  await api.post(`/habits/${habitId}/unlog`);
+  await api.post(`/habits/${habitId}/unlog`, { date });
 };
 
 export const editHabit = async (id: number, name: string) => {
