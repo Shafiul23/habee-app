@@ -6,6 +6,7 @@ import CalendarGrid from "../components/CalendarGrid";
 import HeaderNav from "../components/HeaderNav";
 import Legend from "../components/Legend";
 import LoadingSpinner from "../components/LoadingSpinner";
+import Toast from "react-native-toast-message";
 
 export default function CalendarScreen() {
   const [selectedMonth, setSelectedMonth] = useState(new Date());
@@ -19,8 +20,12 @@ export default function CalendarScreen() {
       const monthString = format(selectedMonth, "yyyy-MM");
       const data: CalendarSummary = await getCalendarSummary(monthString);
       setCalendarData(data);
-    } catch (err) {
-      console.error("Failed to fetch calendar summary:", err);
+    } catch (err: any) {
+      Toast.show({
+        type: "error",
+        text1: "Error loading calendar",
+        text2: err.response?.data?.error || "Server unreachable.",
+      });
     } finally {
       if (isInitial) setLoading(false);
     }

@@ -14,6 +14,7 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { getHabitLogSummary, Habit } from "../../lib/api";
 import { usePaginatedHabits } from "../hooks/usePaginatedHabits";
 import GridCell from "./GridCell";
+import Toast from "react-native-toast-message";
 
 type WeeklyGridProps = {
   habits: Habit[];
@@ -40,10 +41,25 @@ export default function WeeklyGrid({
 
   const { habitsToDisplay } = usePaginatedHabits(habits, currentPage);
 
+  const fetchHabitLogSummary = async () => {
+    try {
+      const monthStr = format(month, "yyyy-MM");
+      const data = await getHabitLogSummary(monthStr);
+      setCompletedLogs(data);
+    } catch (err: any) {
+      Toast.show({
+        type: "error",
+        text1: "Failed to load habit data",
+        text2:
+          err.response?.data?.error ||
+          "Something went wrong. Please try again.",
+      });
+    }
+  };
+
   useEffect(() => {
     if (!habits.length) return;
-    const monthStr = format(month, "yyyy-MM");
-    getHabitLogSummary(monthStr).then(setCompletedLogs).catch(console.error);
+    fetchHabitLogSummary();
   }, [habits, month]);
 
   return (

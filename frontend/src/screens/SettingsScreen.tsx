@@ -6,6 +6,7 @@ import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 import { RootStackParamList } from "../../types";
 import PrimaryButton from "../components/PrimaryButton";
 import { useAuth } from "../contexts/AuthContext";
+import Toast from "react-native-toast-message";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Main">;
 
@@ -17,8 +18,12 @@ export default function SettingsScreen() {
   const handleLogout = async () => {
     try {
       await logout();
-    } catch (error) {
-      console.error("Logout failed:", error);
+    } catch (err: any) {
+      Toast.show({
+        type: "error",
+        text1: "Error loading habits",
+        text2: err.message || "Something went wrong while logging out.",
+      });
     }
   };
 
@@ -35,8 +40,12 @@ export default function SettingsScreen() {
             setLoadingDelete(true);
             try {
               await deleteAccount();
-            } catch (error) {
-              console.error("Account deletion failed:", error);
+            } catch (err: any) {
+              Toast.show({
+                type: "error",
+                text1: "Error deleting account",
+                text2: err.response?.data?.error || "Server unreachable.",
+              });
               Alert.alert("Error", "Could not delete account.");
             } finally {
               setLoadingDelete(false);

@@ -13,6 +13,7 @@ import {
   Text,
   View,
 } from "react-native";
+import Toast from "react-native-toast-message";
 import {
   Habit,
   deleteHabit,
@@ -25,8 +26,8 @@ import HabitItem from "../components/HabitItem";
 import HabitMenu from "../components/HabitMenu";
 import HeaderNav from "../components/HeaderNav";
 import LoadingSpinner from "../components/LoadingSpinner";
+import PrimaryButton from "../components/PrimaryButton";
 import SwipeableDayView from "../components/SwipeableView";
-import { useAuth } from "../contexts/AuthContext";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Main">;
 
@@ -37,8 +38,8 @@ export default function Home() {
   const [showHabitMenu, setShowHabitMenu] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [error, setError] = useState(false);
 
-  const { isLoggedIn } = useAuth();
   const navigation = useNavigation<NavigationProp>();
 
   const loadHabits = async (isInitial = false, givenDate = date) => {
@@ -46,8 +47,14 @@ export default function Home() {
     try {
       const summary = await getHabitSummary(format(givenDate, "yyyy-MM-dd"));
       setHabits(summary);
-    } catch (err) {
-      console.error("Failed to load habits:", err);
+      setError(false);
+    } catch (err: any) {
+      setError(true);
+      Toast.show({
+        type: "error",
+        text1: "Error loading habits",
+        text2: err.response?.data?.error || "Server unreachable.",
+      });
     } finally {
       if (isInitial) setLoading(false);
     }
@@ -76,8 +83,12 @@ export default function Home() {
       setHabits((prev) =>
         prev.map((h) => (h.id === id ? { ...h, completed: !h.completed } : h))
       );
-    } catch (err) {
-      console.error("Failed to toggle habit:", err);
+    } catch (err: any) {
+      Toast.show({
+        type: "error",
+        text1: "Error loading habits",
+        text2: err.response?.data?.error || "Server unreachable.",
+      });
     }
   };
 
@@ -108,8 +119,12 @@ export default function Home() {
               await deleteHabit(habitId);
               setHabits((prev) => prev.filter((h) => h.id !== habitId));
               setShowHabitMenu(null);
-            } catch (err) {
-              console.error("Failed to delete habit:", err);
+            } catch (err: any) {
+              Toast.show({
+                type: "error",
+                text1: "Error deleting habits",
+                text2: err.response?.data?.error || "Server unreachable.",
+              });
             } finally {
               setDeletingId(null);
             }
@@ -141,6 +156,17 @@ export default function Home() {
 
             {loading ? (
               <LoadingSpinner size="large" />
+            ) : error ? (
+              <View style={styles.emptyWrapper}>
+                <Text style={styles.emptyText}>
+                  Failed to load habits. Please try again.
+                </Text>
+                <PrimaryButton
+                  title="Retry"
+                  onPress={() => loadHabits(true)}
+                  disabled={loading}
+                />
+              </View>
             ) : habits.length > 0 ? (
               habits.map((item) => (
                 <HabitItem

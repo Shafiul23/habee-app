@@ -14,6 +14,7 @@ import WeeklyGrid from "../components/WeeklyGrid";
 import { getLayoutConstants } from "../constants/layout";
 import { usePaginatedHabits } from "../hooks/usePaginatedHabits";
 import LoadingSpinner from "../components/LoadingSpinner";
+import Toast from "react-native-toast-message";
 
 export default function GridScreen() {
   const [selectedMonth, setSelectedMonth] = useState(new Date());
@@ -22,6 +23,7 @@ export default function GridScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [expandedHabitId, setExpandedHabitId] = useState<number | null>(null);
+  const [error, setError] = useState(false);
 
   const { pageCount, habitsToDisplay } = usePaginatedHabits(
     habits,
@@ -36,8 +38,14 @@ export default function GridScreen() {
     try {
       const data = await getHabits();
       setHabits(data);
-    } catch (err) {
-      console.error("Failed to fetch habits:", err);
+      setError(false);
+    } catch (err: any) {
+      setError(true);
+      Toast.show({
+        type: "error",
+        text1: "Error loading habits",
+        text2: err.response?.data?.error || "Server unreachable.",
+      });
     } finally {
       if (isInitial) setLoading(false);
     }
@@ -78,6 +86,18 @@ export default function GridScreen() {
       />
       {loading ? (
         <LoadingSpinner />
+      ) : error ? (
+        <View style={[styles.container, styles.centered]}>
+          <Text style={styles.emptyText}>
+            Failed to load your habits. Please try again.
+          </Text>
+          <Pressable
+            onPress={() => fetchHabits(true)}
+            style={styles.retryButton}
+          >
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </Pressable>
+        </View>
       ) : (
         <View style={styles.container}>
           <View style={styles.headerRow}>
@@ -248,5 +268,22 @@ const styles = StyleSheet.create({
   navText: {
     fontSize: 20,
     fontWeight: "600",
+  },
+  centered: {
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  retryButton: {
+    marginTop: 16,
+    backgroundColor: "#f7ce46",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#000",
   },
 });
