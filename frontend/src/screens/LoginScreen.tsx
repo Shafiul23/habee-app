@@ -89,7 +89,7 @@ const LoginScreen = () => {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <View style={styles.card}>
-        <Text style={styles.title}>Azm</Text>
+        <Text style={styles.title}>Habee</Text>
 
         <TextInput
           style={styles.input}

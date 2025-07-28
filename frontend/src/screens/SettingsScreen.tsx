@@ -69,7 +69,7 @@ export default function SettingsScreen() {
             navigation.navigate("NotificationSettings");
           }}
         />
-        <PrimaryButton title="Support Azm" onPress={() => {}} />
+        <PrimaryButton title="Support Habee" onPress={() => {}} />
         <PrimaryButton title="Log Out" onPress={handleLogout} />
         <PrimaryButton
           title="Delete Account"
