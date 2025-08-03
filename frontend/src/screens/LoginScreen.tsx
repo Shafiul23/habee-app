@@ -18,6 +18,7 @@ import { useNavigation } from "@react-navigation/native";
 import Toast from "react-native-toast-message";
 import { isValidEmail } from "../utils/validation";
 import { requestNotificationPermissions } from "../../lib/requestNotificationPermissions";
+import { DEV_USER, DEV_PASSWORD } from "@env";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Main">;
 
@@ -65,8 +66,8 @@ const LoginScreen = () => {
   const handleDevLogin = async () => {
     try {
       const res = await api.post("/auth/login", {
-        email: "shaf@example.com",
-        password: "secret123",
+        email: DEV_USER,
+        password: DEV_PASSWORD,
       });
       await login(res.data.access_token);
 

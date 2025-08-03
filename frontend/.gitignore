@@ -35,7 +35,9 @@ yarn-error.*
 *.pem
 
 # Env
-.env    
+.env
+.env.local
+.env.production    
 
 # local env files
 .env*.local

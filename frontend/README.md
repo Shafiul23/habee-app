@@ -36,7 +36,7 @@ yarn install
 Create a `.env` file in `/frontend`:
 
 ```env
-API_URL=http://192.168.x.x:5050/api
+EXPO_PUBLIC_API_URL=http://192.168.x.x:5050/api
 ```
 
 Replace the IP address with your local backend server IP.
@@ -46,7 +46,7 @@ If needed, create a type declaration:
 ```ts
 // types/env.d.ts
 declare module "@env" {
-  export const API_URL: string;
+  export const EXPO_PUBLIC_API_URL: string;
 }
 ```
 
