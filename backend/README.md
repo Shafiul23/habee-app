@@ -47,6 +47,7 @@ FLASK_RUN_PORT=5050
 
 JWT_SECRET_KEY=your-secret-key
 DATABASE_URL=postgresql://your_user@localhost/your_db
+APPLE_CLIENT_ID=your-apple-service-id
 ```
 
 Replace `your_user` and `your_db` with your actual PostgreSQL credentials.
