@@ -132,7 +132,8 @@ def forgot_password():
     db.session.commit()
 
     # TODO: Replace this with actual email logic
-    print(f"Password reset link: http://localhost:5050/reset-password/{token}")
+    # Deep link to open the mobile app directly for password reset
+    print(f"Password reset link: habee://reset-password/{token}")
 
     return jsonify({"message": "Reset link sent to email"}), 200
 

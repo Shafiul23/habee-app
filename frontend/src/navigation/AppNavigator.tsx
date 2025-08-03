@@ -1,6 +1,6 @@
 // frontend/src/navigation/AppNavigator.tsx
 import React from "react";
-import { NavigationContainer } from "@react-navigation/native";
+import { NavigationContainer, LinkingOptions } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useAuth } from "../contexts/AuthContext";
 import LoginScreen from "../screens/LoginScreen";
@@ -12,14 +12,24 @@ import EditHabitScreen from "../screens/EditHabitScreen";
 import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
 import ResetPasswordScreen from "../screens/ResetPasswordScreen";
 import NotificationSettingsScreen from "../screens/NotificationSettingsScreen";
+import * as Linking from "expo-linking";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
+
+const linking: LinkingOptions<RootStackParamList> = {
+  prefixes: [Linking.createURL("/")],
+  config: {
+    screens: {
+      ResetPassword: "reset-password/:token",
+    },
+  },
+};
 
 export default function AppNavigator() {
   const { isLoggedIn } = useAuth();
 
   return (
-    <NavigationContainer>
+    <NavigationContainer linking={linking}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {isLoggedIn ? (
           <>
