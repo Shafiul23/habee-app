@@ -99,7 +99,9 @@ const LoginScreen = () => {
       }
 
       setLoading(true);
-      const res = await api.post("/auth/apple", { token: credential.identityToken });
+      const res = await api.post("/auth/apple", {
+        token: credential.identityToken,
+      });
       await login(res.data.access_token);
       await requestNotificationPermissions();
 
@@ -160,15 +162,21 @@ const LoginScreen = () => {
         </View>
 
         <PrimaryButton title="Log In" onPress={handleLogin} loading={loading} />
+
         {Platform.OS === "ios" && (
           <AppleAuthentication.AppleAuthenticationButton
-            buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
-            buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+            buttonType={
+              AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN
+            }
+            buttonStyle={
+              AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
+            }
             cornerRadius={8}
             style={styles.appleButton}
             onPress={handleAppleLogin}
           />
         )}
+
         <PrimaryButton
           title="Dev Login"
           onPress={handleDevLogin}
@@ -270,7 +278,7 @@ const styles = StyleSheet.create({
   appleButton: {
     width: "100%",
     height: 44,
-    marginTop: 16,
+    marginVertical: 6,
   },
 });
 
