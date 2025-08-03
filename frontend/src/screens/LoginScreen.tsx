@@ -19,6 +19,7 @@ import Toast from "react-native-toast-message";
 import { isValidEmail } from "../utils/validation";
 import { requestNotificationPermissions } from "../../lib/requestNotificationPermissions";
 import { DEV_USER, DEV_PASSWORD } from "@env";
+import * as AppleAuthentication from "expo-apple-authentication";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Main">;
 
@@ -84,6 +85,44 @@ const LoginScreen = () => {
     }
   };
 
+  const handleAppleLogin = async () => {
+    try {
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+
+      if (!credential.identityToken) {
+        throw new Error("No identity token returned");
+      }
+
+      setLoading(true);
+      const res = await api.post("/auth/apple", {
+        token: credential.identityToken,
+      });
+      await login(res.data.access_token);
+      await requestNotificationPermissions();
+
+      Toast.show({
+        type: "success",
+        text1: "Welcome!",
+      });
+    } catch (err: any) {
+      if (err.code === "ERR_CANCELED") {
+        return;
+      }
+      Toast.show({
+        type: "error",
+        text1: "Apple Sign-In Failed",
+        text2: err.message || "Something went wrong",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -123,6 +162,21 @@ const LoginScreen = () => {
         </View>
 
         <PrimaryButton title="Log In" onPress={handleLogin} loading={loading} />
+
+        {Platform.OS === "ios" && (
+          <AppleAuthentication.AppleAuthenticationButton
+            buttonType={
+              AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN
+            }
+            buttonStyle={
+              AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
+            }
+            cornerRadius={8}
+            style={styles.appleButton}
+            onPress={handleAppleLogin}
+          />
+        )}
+
         <PrimaryButton
           title="Dev Login"
           onPress={handleDevLogin}
@@ -220,6 +274,11 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 16,
     fontWeight: "500",
+  },
+  appleButton: {
+    width: "100%",
+    height: 44,
+    marginVertical: 6,
   },
 });
 

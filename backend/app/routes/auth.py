@@ -4,10 +4,15 @@ from app.models.user import User
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from datetime import datetime, timedelta
 from app.models.reset_token import PasswordResetToken
+import os
+import json
 import re
+import requests
 import uuid
+import jwt
 
 auth_bp = Blueprint("auth", __name__)
+APPLE_CLIENT_ID = os.getenv("APPLE_CLIENT_ID")
 
 @auth_bp.route("/register", methods=["POST"])
 def register():
@@ -55,6 +60,45 @@ def login():
     return jsonify({"access_token": access_token}), 200
 
 
+@auth_bp.route("/apple", methods=["POST"])
+def apple_login():
+    data = request.get_json()
+    identity_token = data.get("token")
+
+    if not identity_token:
+        return jsonify({"error": "Token is required"}), 400
+
+    try:
+        apple_keys = requests.get("https://appleid.apple.com/auth/keys").json()
+        header = jwt.get_unverified_header(identity_token)
+        key = next((k for k in apple_keys["keys"] if k["kid"] == header["kid"]), None)
+        if key is None:
+            raise Exception("Key not found")
+
+        public_key = jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(key))
+        decoded = jwt.decode(
+            identity_token,
+            public_key,
+            algorithms=["RS256"],
+            audience=APPLE_CLIENT_ID,
+        )
+        email = decoded.get("email")
+        if not email:
+            raise Exception("Email not found")
+    except Exception:
+        return jsonify({"error": "Invalid token"}), 401
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        user = User(email=email)
+        user.set_password(str(uuid.uuid4()))
+        db.session.add(user)
+        db.session.commit()
+
+    access_token = create_access_token(identity=str(user.id))
+    return jsonify({"access_token": access_token}), 200
+
+
 @auth_bp.route("/delete", methods=["DELETE"])
 @jwt_required()
 def delete_user():
@@ -69,9 +113,6 @@ def delete_user():
 
     return jsonify({"message": "User deleted successfully"}), 200
 
-import uuid
-from datetime import datetime, timedelta
-from app.models.reset_token import PasswordResetToken  # Create this model
 
 # Store tokens in DB
 @auth_bp.route("/forgot-password", methods=["POST"])
