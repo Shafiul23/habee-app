@@ -2,7 +2,14 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Constants from "expo-constants";
 import React, { useState } from "react";
-import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Alert,
+  Linking,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { RootStackParamList } from "../../types";
 import PrimaryButton from "../components/PrimaryButton";
 import { useAuth } from "../contexts/AuthContext";
@@ -23,6 +30,20 @@ export default function SettingsScreen() {
         type: "error",
         text1: "Error loading habits",
         text2: err.message || "Something went wrong while logging out.",
+      });
+    }
+  };
+
+  const handleSupport = async () => {
+    const url = "https://habee-app.com";
+    const supported = await Linking.canOpenURL(url);
+
+    if (supported) {
+      await Linking.openURL(url);
+    } else {
+      Toast.show({
+        type: "error",
+        text1: "Unable to open the support page.",
       });
     }
   };
@@ -63,13 +84,14 @@ export default function SettingsScreen() {
     >
       <View>
         <Text style={styles.title}>Settings</Text>
+
         <PrimaryButton
           title="Notifications"
           onPress={() => {
             navigation.navigate("NotificationSettings");
           }}
         />
-        <PrimaryButton title="Support Habee" onPress={() => {}} />
+        <PrimaryButton title="Support Habee" onPress={handleSupport} />
         <PrimaryButton title="Log Out" onPress={handleLogout} />
         <PrimaryButton
           title="Delete Account"
