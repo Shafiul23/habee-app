@@ -18,7 +18,8 @@
       "bundleIdentifier": "com.habeeapp.habee",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
-      }
+      },
+      "icon": "./assets/icon.png"
     },
     "android": {
       "adaptiveIcon": {

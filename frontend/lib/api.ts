@@ -1,10 +1,9 @@
 // frontend/lib/api.ts
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
-import { EXPO_PUBLIC_API_URL } from "@env";
 
 const api = axios.create({
-  baseURL: EXPO_PUBLIC_API_URL,
+  baseURL: process.env.EXPO_PUBLIC_API_URL,
   withCredentials: true,
 });
 

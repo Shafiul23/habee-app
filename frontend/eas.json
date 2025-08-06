@@ -12,7 +12,9 @@
       "distribution": "internal"
     },
     "production": {
-      "autoIncrement": true
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://habee-app.onrender.com/api"
+      }
     }
   },
   "submit": {

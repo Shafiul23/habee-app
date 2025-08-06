@@ -3,14 +3,10 @@
   "version": "1.0.0",
   "main": "index.ts",
   "scripts": {
-    "use:local": "cp .env.local .env",
-    "use:prod": "cp .env.production .env",
     "start": "npx expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web",
-    "start:prod": "npm run use:prod && expo start --clear",
-    "start:local": "npm run use:local && expo start --clear"
+    "web": "expo start --web"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.1.2",
