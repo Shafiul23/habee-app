@@ -4,12 +4,14 @@ from app.models.user import User
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from datetime import datetime, timedelta
 from app.models.reset_token import PasswordResetToken
+from jwt import PyJWKClient
 import os
-import json
 import re
-import requests
 import uuid
 import jwt
+
+import json
+import requests
 
 auth_bp = Blueprint("auth", __name__)
 APPLE_CLIENT_ID = os.getenv("APPLE_CLIENT_ID")
@@ -69,21 +71,21 @@ def apple_login():
         return jsonify({"error": "Token is required"}), 400
 
     try:
-        apple_keys = requests.get("https://appleid.apple.com/auth/keys").json()
-        header = jwt.get_unverified_header(identity_token)
-        key = next((k for k in apple_keys["keys"] if k["kid"] == header["kid"]), None)
-        if key is None:
-            raise Exception("Key not found")
-
-        public_key = jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(key))
+        jwks_url = "https://appleid.apple.com/auth/keys"
+        jwk_client = PyJWKClient(jwks_url)
+        signing_key = jwk_client.get_signing_key_from_jwt(identity_token)
+        
         decoded = jwt.decode(
             identity_token,
-            public_key,
+            signing_key.key,
             algorithms=["RS256"],
-            audience=APPLE_CLIENT_ID,
+            audience=APPLE_CLIENT_ID
         )
+
+
         apple_id = decoded.get("sub")
         email = decoded.get("email")
+
     except Exception:
         return jsonify({"error": "Invalid token"}), 401
 
