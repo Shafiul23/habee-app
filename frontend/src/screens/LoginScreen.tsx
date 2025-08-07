@@ -64,27 +64,6 @@ const LoginScreen = () => {
     }
   };
 
-  const handleDevLogin = async () => {
-    try {
-      const res = await api.post("/auth/login", {
-        email: DEV_USER,
-        password: DEV_PASSWORD,
-      });
-      await login(res.data.access_token);
-
-      Toast.show({
-        type: "success",
-        text1: "Dev Login Success",
-      });
-    } catch (err: any) {
-      Toast.show({
-        type: "error",
-        text1: "Dev Login Failed",
-        text2: err.response?.data?.error || "Something went wrong",
-      });
-    }
-  };
-
   const handleAppleLogin = async () => {
     try {
       const credential = await AppleAuthentication.signInAsync({
@@ -177,23 +156,17 @@ const LoginScreen = () => {
           />
         )}
 
-        <PrimaryButton
-          title="Dev Login"
-          onPress={handleDevLogin}
-          loading={loading}
-        />
-
         {loading && (
           <Text style={styles.wakeNotice}>
             First load may take up to a minute if the server is waking up.
           </Text>
         )}
 
-        <Pressable onPress={() => navigation.navigate("Register")}> 
-          <Text style={styles.link}>Don’t have an account? Register</Text> 
+        <Pressable onPress={() => navigation.navigate("Register")}>
+          <Text style={styles.link}>Don’t have an account? Register</Text>
         </Pressable>
-        <Pressable onPress={() => navigation.navigate("ForgotPassword")}> 
-          <Text style={styles.link}>Forgot password?</Text> 
+        <Pressable onPress={() => navigation.navigate("ForgotPassword")}>
+          <Text style={styles.link}>Forgot password?</Text>
         </Pressable>
       </View>
     </KeyboardAvoidingView>
