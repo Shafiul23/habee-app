@@ -14,9 +14,10 @@
       "backgroundColor": "#f7ce46"
     },
     "ios": {
-      "buildNumber": "1.0.5",
+      "buildNumber": "1.0.6",
       "supportsTablet": true,
       "bundleIdentifier": "com.habeeapp.habee",
+      "usesAppleSignIn": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       },
