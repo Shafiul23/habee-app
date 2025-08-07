@@ -82,18 +82,28 @@ def apple_login():
             algorithms=["RS256"],
             audience=APPLE_CLIENT_ID,
         )
+        apple_id = decoded.get("sub")
         email = decoded.get("email")
-        if not email:
-            raise Exception("Email not found")
     except Exception:
         return jsonify({"error": "Invalid token"}), 401
 
-    user = User.query.filter_by(email=email).first()
+    user = None
+    if apple_id:
+        user = User.query.filter_by(apple_id=apple_id).first()
+
+    if not user and email:
+        user = User.query.filter_by(email=email).first()
+        if user:
+            user.apple_id = apple_id
+
     if not user:
-        user = User(email=email)
+        if not email:
+            return jsonify({"error": "Email not provided; user not found"}), 400
+        user = User(email=email, apple_id=apple_id)
         user.set_password(str(uuid.uuid4()))
         db.session.add(user)
-        db.session.commit()
+
+    db.session.commit()
 
     access_token = create_access_token(identity=str(user.id))
     return jsonify({"access_token": access_token}), 200
