@@ -47,3 +47,6 @@ yarn-error.*
 
 # System
 *.DS_Store
+
+# ipa files
+*.ipa

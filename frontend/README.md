@@ -88,6 +88,12 @@ npx expo start -c
 - Axios interceptor auto-injects token for authenticated requests
 - Base URL is set via `.env` and imported using `@env`
 
+## iOS build
+
+```
+eas build --platform ios --profile production --local
+```
+
 ---
 
 ## 🌐 Notes

@@ -14,7 +14,7 @@
       "backgroundColor": "#f7ce46"
     },
     "ios": {
-      "buildNumber": "1.0.4",
+      "buildNumber": "1.0.5",
       "supportsTablet": true,
       "bundleIdentifier": "com.habeeapp.habee",
       "infoPlist": {

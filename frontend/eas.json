@@ -13,6 +13,11 @@
     "production": {
       "env": {
         "EXPO_PUBLIC_API_URL": "https://habee-app.onrender.com/api"
+      },
+      "ios": {
+        "entitlements": {
+          "com.apple.developer.applesignin": ["Default"]
+        }
       }
     }
   },
