@@ -16,6 +16,8 @@ import { useAuth } from "../contexts/AuthContext";
 import { isValidEmail, isValidPassword } from "../utils/validation";
 import Toast from "react-native-toast-message";
 import { requestNotificationPermissions } from "../../lib/requestNotificationPermissions";
+import { useGlobalStyles } from "../styles/theme";
+import { useTheme } from "../contexts/ThemeContext";
 
 export default function RegisterScreen({ navigation }: { navigation: any }) {
   const [email, setEmail] = useState("");
@@ -29,6 +31,9 @@ export default function RegisterScreen({ navigation }: { navigation: any }) {
   const [confirmError, setConfirmError] = useState<string | null>(null);
 
   const { register } = useAuth();
+  const globalStyles = useGlobalStyles();
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
 
   const handleRegister = async () => {
     let valid = true;
@@ -91,7 +96,7 @@ export default function RegisterScreen({ navigation }: { navigation: any }) {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
+      style={globalStyles.screen}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView
@@ -99,7 +104,7 @@ export default function RegisterScreen({ navigation }: { navigation: any }) {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.card}>
-          <Text style={styles.title}>Register</Text>
+          <Text style={[globalStyles.text, styles.title]}>Register</Text>
 
           <TextInput
             style={[styles.input, emailError && styles.inputError]}
@@ -138,9 +143,9 @@ export default function RegisterScreen({ navigation }: { navigation: any }) {
           )}
 
           <View style={styles.requirementsList}>
-            <Text style={styles.requirementsItem}>• At least 6 characters</Text>
-            <Text style={styles.requirementsItem}>• 1 capital letter</Text>
-            <Text style={styles.requirementsItem}>• 1 number</Text>
+            <Text style={[globalStyles.text, styles.requirementsItem]}>• At least 6 characters</Text>
+            <Text style={[globalStyles.text, styles.requirementsItem]}>• 1 capital letter</Text>
+            <Text style={[globalStyles.text, styles.requirementsItem]}>• 1 number</Text>
           </View>
 
           <View style={styles.passwordWrapper}>
@@ -173,101 +178,99 @@ export default function RegisterScreen({ navigation }: { navigation: any }) {
           />
 
           {loading && (
-            <Text style={styles.wakeNotice}>
+            <Text style={[globalStyles.text, styles.wakeNotice]}>
               First load may take up to a minute if the server is waking up.
             </Text>
           )}
 
           <Pressable onPress={() => navigation.navigate("Login")}>
-            <Text style={styles.link}>Already have an account? Log in</Text>
+            <Text style={[globalStyles.text, styles.link]}>Already have an account? Log in</Text>
           </Pressable>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f9f9f9",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 20,
-  },
-  card: {
-    width: "100%",
-    backgroundColor: "#ffffff",
-    borderRadius: 12,
-    padding: 24,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-  },
-  title: {
-    color: "#000",
-    fontSize: 24,
-    fontWeight: "600",
-    marginBottom: 24,
-    textAlign: "center",
-  },
-  input: {
-    height: 50,
-    backgroundColor: "#f2f2f2",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#dcdcdc",
-    paddingHorizontal: 16,
-    color: "#000",
-    marginBottom: 16,
-    fontSize: 16,
-  },
-  inputError: {
-    borderColor: "#c0392b",
-  },
-  passwordWrapper: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f2f2f2",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#dcdcdc",
-    paddingHorizontal: 16,
-    marginBottom: 16,
-  },
-  passwordInput: {
-    flex: 1,
-    height: 50,
-    color: "#000",
-    fontSize: 16,
-  },
-  requirementsList: {
-    marginBottom: 16,
-    paddingLeft: 8,
-  },
-  requirementsItem: {
-    fontSize: 14,
-    color: "#222",
-    lineHeight: 18,
-  },
-  errorMessage: {
-    color: "#c0392b",
-    textAlign: "left",
-    fontSize: 13,
-    lineHeight: 18,
-    marginBottom: 10,
-  },
-  wakeNotice: {
-    marginTop: 12,
-    fontSize: 13,
-    color: "#666",
-    textAlign: "center",
-    lineHeight: 18,
-  },
-  link: {
-    color: "#000",
-    textAlign: "center",
-    marginTop: 16,
-    fontWeight: "500",
-  },
-});
+const getStyles = (colors: { background: string; text: string }) =>
+  StyleSheet.create({
+    container: {
+      justifyContent: "center",
+      alignItems: "center",
+      paddingHorizontal: 20,
+    },
+    card: {
+      width: "100%",
+      backgroundColor: colors.background,
+      borderRadius: 12,
+      padding: 24,
+      shadowColor: "#000",
+      shadowOpacity: 0.1,
+      shadowRadius: 10,
+    },
+    title: {
+      color: colors.text,
+      fontSize: 24,
+      fontWeight: "600",
+      marginBottom: 24,
+      textAlign: "center",
+    },
+    input: {
+      height: 50,
+      backgroundColor: colors.background,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: "#dcdcdc",
+      paddingHorizontal: 16,
+      color: colors.text,
+      marginBottom: 16,
+      fontSize: 16,
+    },
+    inputError: {
+      borderColor: "#c0392b",
+    },
+    passwordWrapper: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: colors.background,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: "#dcdcdc",
+      paddingHorizontal: 16,
+      marginBottom: 16,
+    },
+    passwordInput: {
+      flex: 1,
+      height: 50,
+      color: colors.text,
+      fontSize: 16,
+    },
+    requirementsList: {
+      marginBottom: 16,
+      paddingLeft: 8,
+    },
+    requirementsItem: {
+      fontSize: 14,
+      color: colors.text,
+      lineHeight: 18,
+    },
+    errorMessage: {
+      color: "#c0392b",
+      textAlign: "left",
+      fontSize: 13,
+      lineHeight: 18,
+      marginBottom: 10,
+    },
+    wakeNotice: {
+      marginTop: 12,
+      fontSize: 13,
+      color: colors.text,
+      textAlign: "center",
+      lineHeight: 18,
+    },
+    link: {
+      color: colors.text,
+      textAlign: "center",
+      marginTop: 16,
+      fontWeight: "500",
+    },
+  });

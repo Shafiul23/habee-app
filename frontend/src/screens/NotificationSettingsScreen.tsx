@@ -19,6 +19,7 @@ import {
 } from "../../lib/notifications";
 import PrimaryButton from "../components/PrimaryButton";
 import { useGlobalStyles } from "../styles/theme";
+import { useTheme } from "../contexts/ThemeContext";
 
 export default function NotificationSettingsScreen() {
   const [reminderEnabled, setReminderEnabled] = useState(false);
@@ -26,6 +27,7 @@ export default function NotificationSettingsScreen() {
   const [pendingTime, setPendingTime] = useState<Date | null>(null);
   const [editing, setEditing] = useState(false);
   const globalStyles = useGlobalStyles();
+  const { theme, colors } = useTheme();
   const styles = getStyles();
 
   useEffect(() => {
@@ -98,6 +100,8 @@ export default function NotificationSettingsScreen() {
                 is24Hour={false}
                 display={Platform.OS === "ios" ? "spinner" : "default"}
                 onChange={handleTimeChange}
+                themeVariant={theme}
+                textColor={colors.text}
               />
 
               {pendingTime && (

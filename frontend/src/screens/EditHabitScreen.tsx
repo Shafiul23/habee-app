@@ -5,6 +5,8 @@ import { StyleSheet, Text, TextInput, View } from "react-native";
 import { editHabit } from "../../lib/api";
 import PrimaryButton from "../components/PrimaryButton";
 import { isValidHabit } from "../utils/validation";
+import { useGlobalStyles } from "../styles/theme";
+import { useTheme } from "../contexts/ThemeContext";
 
 export default function EditHabitScreen() {
   const route = useRoute<any>();
@@ -14,6 +16,9 @@ export default function EditHabitScreen() {
   const [name, setName] = useState(currentName);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const globalStyles = useGlobalStyles();
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
 
   const handleUpdate = async () => {
     const { valid, error: validationError } = isValidHabit(name);
@@ -39,9 +44,9 @@ export default function EditHabitScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[globalStyles.screen, styles.container]}>
       <View style={styles.card}>
-        <Text style={styles.label}>Edit Habit</Text>
+        <Text style={[globalStyles.text, styles.label]}>Edit Habit</Text>
         <TextInput
           style={[styles.input, error && styles.inputError]}
           value={name}
@@ -63,44 +68,43 @@ export default function EditHabitScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-    backgroundColor: "#f2f2f2",
-  },
-  card: {
-    width: "100%",
-    backgroundColor: "#fff",
-    padding: 24,
-    borderRadius: 16,
-    elevation: 3,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 10,
-    color: "#000",
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 20,
-    fontSize: 16,
-    color: "#000",
-  },
-  inputError: {
-    borderColor: "#c0392b",
-  },
-  errorMessage: {
-    color: "#c0392b",
-    fontSize: 13,
-    marginBottom: 14,
-    textAlign: "left",
-  },
-});
+const getStyles = (colors: { background: string; text: string }) =>
+  StyleSheet.create({
+    container: {
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 20,
+    },
+    card: {
+      width: "100%",
+      backgroundColor: colors.background,
+      padding: 24,
+      borderRadius: 16,
+      elevation: 3,
+    },
+    label: {
+      fontSize: 16,
+      fontWeight: "600",
+      marginBottom: 10,
+      color: colors.text,
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: "#ccc",
+      borderRadius: 8,
+      padding: 12,
+      marginBottom: 20,
+      fontSize: 16,
+      color: colors.text,
+      backgroundColor: colors.background,
+    },
+    inputError: {
+      borderColor: "#c0392b",
+    },
+    errorMessage: {
+      color: "#c0392b",
+      fontSize: 13,
+      marginBottom: 14,
+      textAlign: "left",
+    },
+  });

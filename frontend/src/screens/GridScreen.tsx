@@ -15,6 +15,8 @@ import { getLayoutConstants } from "../constants/layout";
 import { usePaginatedHabits } from "../hooks/usePaginatedHabits";
 import LoadingSpinner from "../components/LoadingSpinner";
 import Toast from "react-native-toast-message";
+import { useGlobalStyles } from "../styles/theme";
+import { useTheme } from "../contexts/ThemeContext";
 
 export default function GridScreen() {
   const [selectedMonth, setSelectedMonth] = useState(new Date());
@@ -24,6 +26,9 @@ export default function GridScreen() {
   const [loading, setLoading] = useState(false);
   const [expandedHabitId, setExpandedHabitId] = useState<number | null>(null);
   const [error, setError] = useState(false);
+  const globalStyles = useGlobalStyles();
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
 
   const { pageCount, habitsToDisplay } = usePaginatedHabits(
     habits,
@@ -78,7 +83,7 @@ export default function GridScreen() {
   };
 
   return (
-    <>
+    <View style={globalStyles.screen}>
       <HeaderNav
         date={selectedMonth}
         onPrev={handlePrevMonth}
@@ -88,14 +93,14 @@ export default function GridScreen() {
         <LoadingSpinner />
       ) : error ? (
         <View style={[styles.container, styles.centered]}>
-          <Text style={styles.emptyText}>
+          <Text style={[globalStyles.text, styles.emptyText]}>
             Failed to load your habits. Please try again.
           </Text>
           <Pressable
             onPress={() => fetchHabits(true)}
             style={styles.retryButton}
           >
-            <Text style={styles.retryButtonText}>Retry</Text>
+            <Text style={[globalStyles.text, styles.retryButtonText]}>Retry</Text>
           </Pressable>
         </View>
       ) : (
@@ -160,7 +165,7 @@ export default function GridScreen() {
                 dayLabelWidth={dayLabelWidth}
               />
             ) : (
-              <Text style={styles.emptyText}>
+              <Text style={[globalStyles.text, styles.emptyText]}>
                 No habits to display. Add habits to view your monthly progress.
               </Text>
             )}
@@ -178,67 +183,70 @@ export default function GridScreen() {
           )}
         </View>
       )}
-    </>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: "center",
-  },
-  emptyText: {
-    fontSize: 16,
-    color: "#777",
-    textAlign: "center",
-    paddingHorizontal: 20,
-    marginTop: 20,
-    lineHeight: 24,
-  },
-  headerRow: {
-    flexDirection: "row",
-    backgroundColor: "#fff",
-    marginHorizontal: 8,
-    zIndex: 10,
-  },
-  gridContent: {
-    flexDirection: "row",
-    justifyContent: "center",
-  },
-  stickyLeftColumn: {
-    backgroundColor: "#fff",
-    zIndex: 10,
-  },
-  row: { flexDirection: "row" },
-  cell: {
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 6,
-    margin: 2,
-    borderColor: "grey",
-  },
-  headerCell: { backgroundColor: "#fff" },
-  dateCell: { borderTopWidth: 0 },
-  headerText: {
-    fontSize: 12,
-    fontWeight: "700",
-    textAlign: "center",
-  },
-  habitName: {
-    fontSize: 10,
-    fontWeight: "600",
-    textAlign: "center",
-    paddingHorizontal: 1,
-  },
-  dayLabelText: {
-    fontSize: 14,
-    fontWeight: "500",
-    textAlign: "center",
-  },
+const getStyles = (colors: { background: string; text: string }) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    scrollContent: {
+      flexGrow: 1,
+      justifyContent: "center",
+    },
+    emptyText: {
+      fontSize: 16,
+      color: colors.text,
+      textAlign: "center",
+      paddingHorizontal: 20,
+      marginTop: 20,
+      lineHeight: 24,
+    },
+    headerRow: {
+      flexDirection: "row",
+      backgroundColor: colors.background,
+      marginHorizontal: 8,
+      zIndex: 10,
+    },
+    gridContent: {
+      flexDirection: "row",
+      justifyContent: "center",
+    },
+    stickyLeftColumn: {
+      backgroundColor: colors.background,
+      zIndex: 10,
+    },
+    row: { flexDirection: "row" },
+    cell: {
+      justifyContent: "center",
+      alignItems: "center",
+      borderRadius: 6,
+      margin: 2,
+      borderColor: "grey",
+    },
+    headerCell: { backgroundColor: colors.background },
+    dateCell: { borderTopWidth: 0 },
+    headerText: {
+      fontSize: 12,
+      fontWeight: "700",
+      textAlign: "center",
+    },
+    habitName: {
+      fontSize: 10,
+      fontWeight: "600",
+      textAlign: "center",
+      paddingHorizontal: 1,
+      color: colors.text,
+    },
+    dayLabelText: {
+      fontSize: 14,
+      fontWeight: "500",
+      textAlign: "center",
+      color: colors.text,
+    },
   fabLeft: {
     position: "absolute",
     bottom: 30,
@@ -268,6 +276,7 @@ const styles = StyleSheet.create({
   navText: {
     fontSize: 20,
     fontWeight: "600",
+    color: colors.text,
   },
   centered: {
     justifyContent: "center",
@@ -284,6 +293,6 @@ const styles = StyleSheet.create({
   retryButtonText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#000",
+    color: colors.text,
   },
 });

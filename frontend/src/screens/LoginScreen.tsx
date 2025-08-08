@@ -20,6 +20,8 @@ import { isValidEmail } from "../utils/validation";
 import { requestNotificationPermissions } from "../../lib/requestNotificationPermissions";
 import { DEV_USER, DEV_PASSWORD } from "@env";
 import * as AppleAuthentication from "expo-apple-authentication";
+import { useGlobalStyles } from "../styles/theme";
+import { useTheme } from "../contexts/ThemeContext";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Main">;
 
@@ -31,6 +33,9 @@ const LoginScreen = () => {
 
   const navigation = useNavigation<NavigationProp>();
   const { login } = useAuth();
+  const globalStyles = useGlobalStyles();
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
 
   const handleLogin = async () => {
     if (!isValidEmail(email)) {
@@ -104,11 +109,11 @@ const LoginScreen = () => {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[globalStyles.screen, styles.container]}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <View style={styles.card}>
-        <Text style={styles.title}>Habee</Text>
+        <Text style={[globalStyles.text, styles.title]}>Habee</Text>
 
         <TextInput
           style={styles.input}
@@ -157,91 +162,90 @@ const LoginScreen = () => {
         )}
 
         {loading && (
-          <Text style={styles.wakeNotice}>
+          <Text style={[globalStyles.text, styles.wakeNotice]}>
             First load may take up to a minute if the server is waking up.
           </Text>
         )}
 
         <Pressable onPress={() => navigation.navigate("Register")}>
-          <Text style={styles.link}>Don’t have an account? Register</Text>
+          <Text style={[globalStyles.text, styles.link]}>Don’t have an account? Register</Text>
         </Pressable>
         <Pressable onPress={() => navigation.navigate("ForgotPassword")}>
-          <Text style={styles.link}>Forgot password?</Text>
+          <Text style={[globalStyles.text, styles.link]}>Forgot password?</Text>
         </Pressable>
       </View>
     </KeyboardAvoidingView>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f9f9f9",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 20,
-  },
-  card: {
-    width: "100%",
-    backgroundColor: "#ffffff",
-    borderRadius: 12,
-    padding: 24,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-  },
-  title: {
-    color: "#000",
-    fontSize: 24,
-    fontWeight: "600",
-    marginBottom: 24,
-    textAlign: "center",
-  },
-  input: {
-    height: 50,
-    backgroundColor: "#f2f2f2",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#dcdcdc",
-    paddingHorizontal: 16,
-    color: "#000",
-    marginBottom: 16,
-    fontSize: 16,
-  },
-  passwordWrapper: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f2f2f2",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#dcdcdc",
-    paddingHorizontal: 16,
-    marginBottom: 16,
-  },
-  passwordInput: {
-    flex: 1,
-    height: 50,
-    color: "#000",
-    fontSize: 16,
-  },
-  wakeNotice: {
-    marginTop: 12,
-    fontSize: 13,
-    color: "#666",
-    textAlign: "center",
-    lineHeight: 18,
-  },
-  link: {
-    color: "#000",
-    textAlign: "center",
-    marginTop: 16,
-    fontWeight: "500",
-  },
-  appleButton: {
-    width: "100%",
-    height: 44,
-    marginVertical: 6,
-  },
-});
+const getStyles = (colors: { background: string; text: string }) =>
+  StyleSheet.create({
+    container: {
+      justifyContent: "center",
+      alignItems: "center",
+      paddingHorizontal: 20,
+    },
+    card: {
+      width: "100%",
+      backgroundColor: colors.background,
+      borderRadius: 12,
+      padding: 24,
+      shadowColor: "#000",
+      shadowOpacity: 0.1,
+      shadowRadius: 10,
+    },
+    title: {
+      color: colors.text,
+      fontSize: 24,
+      fontWeight: "600",
+      marginBottom: 24,
+      textAlign: "center",
+    },
+    input: {
+      height: 50,
+      backgroundColor: colors.background,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: "#dcdcdc",
+      paddingHorizontal: 16,
+      color: colors.text,
+      marginBottom: 16,
+      fontSize: 16,
+    },
+    passwordWrapper: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: colors.background,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: "#dcdcdc",
+      paddingHorizontal: 16,
+      marginBottom: 16,
+    },
+    passwordInput: {
+      flex: 1,
+      height: 50,
+      color: colors.text,
+      fontSize: 16,
+    },
+    wakeNotice: {
+      marginTop: 12,
+      fontSize: 13,
+      color: colors.text,
+      textAlign: "center",
+      lineHeight: 18,
+    },
+    link: {
+      color: colors.text,
+      textAlign: "center",
+      marginTop: 16,
+      fontWeight: "500",
+    },
+    appleButton: {
+      width: "100%",
+      height: 44,
+      marginVertical: 6,
+    },
+  });
 
 export default LoginScreen;

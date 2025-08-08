@@ -28,6 +28,8 @@ import HeaderNav from "../components/HeaderNav";
 import LoadingSpinner from "../components/LoadingSpinner";
 import PrimaryButton from "../components/PrimaryButton";
 import SwipeableDayView from "../components/SwipeableView";
+import { useGlobalStyles } from "../styles/theme";
+import { useTheme } from "../contexts/ThemeContext";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Main">;
 
@@ -41,6 +43,9 @@ export default function Home() {
   const [error, setError] = useState(false);
 
   const navigation = useNavigation<NavigationProp>();
+  const globalStyles = useGlobalStyles();
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
 
   const loadHabits = async (isInitial = false, givenDate = date) => {
     if (isInitial) setLoading(true);
@@ -135,7 +140,7 @@ export default function Home() {
   };
 
   return (
-    <>
+    <View style={globalStyles.screen}>
       <HeaderNav
         date={date}
         onPrev={goToPrevDay}
@@ -150,7 +155,7 @@ export default function Home() {
           }
         >
           <View style={styles.innerContainer}>
-            <Text style={styles.objectivesTitle}>
+            <Text style={[globalStyles.text, styles.objectivesTitle]}>
               {format(date, "EEEE")} Habits
             </Text>
 
@@ -158,7 +163,7 @@ export default function Home() {
               <LoadingSpinner size="large" />
             ) : error ? (
               <View style={styles.emptyWrapper}>
-                <Text style={styles.emptyText}>
+                <Text style={[globalStyles.text, styles.emptyText]}>
                   Failed to load habits. Please try again.
                 </Text>
                 <PrimaryButton
@@ -178,7 +183,7 @@ export default function Home() {
               ))
             ) : (
               <View style={styles.emptyWrapper}>
-                <Text style={styles.emptyText}>
+                <Text style={[globalStyles.text, styles.emptyText]}>
                   You haven’t added any habits yet.{"\n"}Tap the + button below
                   to get started.
                 </Text>
@@ -192,7 +197,7 @@ export default function Home() {
         style={styles.fab}
         onPress={() => navigation.navigate("CreateHabit")}
       >
-        <Ionicons name="create-outline" size={32} color="black" />
+        <Ionicons name="create-outline" size={32} color={colors.text} />
       </Pressable>
 
       {showHabitMenu !== null && (
@@ -212,34 +217,35 @@ export default function Home() {
           deleting={deletingId === showHabitMenu}
         />
       )}
-    </>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
-  scrollContent: {
-    flexGrow: 1,
-    paddingBottom: 100,
-    backgroundColor: "#fff",
-  },
-  innerContainer: {
-    paddingHorizontal: 20,
-    minHeight: "100%",
-  },
-  objectivesTitle: {
-    fontSize: 24,
-    fontWeight: "700",
-    marginBottom: 16,
-    marginTop: 20,
-    color: "#000",
-    textAlign: "center",
-    backgroundColor: "#fff",
-  },
-  fab: {
-    position: "absolute",
-    bottom: 30,
-    right: 20,
-    backgroundColor: "#f7ce46",
+const getStyles = (colors: { background: string; text: string }) =>
+  StyleSheet.create({
+    scrollContent: {
+      flexGrow: 1,
+      paddingBottom: 100,
+      backgroundColor: colors.background,
+    },
+    innerContainer: {
+      paddingHorizontal: 20,
+      minHeight: "100%",
+    },
+    objectivesTitle: {
+      fontSize: 24,
+      fontWeight: "700",
+      marginBottom: 16,
+      marginTop: 20,
+      color: colors.text,
+      textAlign: "center",
+      backgroundColor: colors.background,
+    },
+    fab: {
+      position: "absolute",
+      bottom: 30,
+      right: 20,
+      backgroundColor: "#f7ce46",
     padding: 16,
     borderRadius: 30,
     elevation: 5,
@@ -259,7 +265,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   menuBox: {
-    backgroundColor: "white",
+    backgroundColor: colors.background,
     padding: 24,
     borderRadius: 16,
     width: 300,
