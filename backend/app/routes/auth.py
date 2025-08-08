@@ -10,9 +10,6 @@ import re
 import uuid
 import jwt
 
-import json
-import requests
-
 auth_bp = Blueprint("auth", __name__)
 APPLE_CLIENT_ID = os.getenv("APPLE_CLIENT_ID")
 
@@ -81,12 +78,15 @@ def apple_login():
             algorithms=["RS256"],
             audience=APPLE_CLIENT_ID
         )
+        print("Decoded token:", decoded)
 
 
         apple_id = decoded.get("sub")
         email = decoded.get("email")
 
-    except Exception:
+    except Exception as e:
+        print("Apple token validation error:", str(e))
+        print("Token received:", identity_token)
         return jsonify({"error": "Invalid token"}), 401
 
     user = None

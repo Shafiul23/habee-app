@@ -92,6 +92,7 @@ npx expo start -c
 
 ```
 eas build --platform ios --profile production --local
+eas submit --platform ios --path ./your-app.ipa
 ```
 
 ---
