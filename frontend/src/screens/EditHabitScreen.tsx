@@ -1,7 +1,14 @@
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { AxiosError } from "axios";
 import React, { useState } from "react";
-import { StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { editHabit } from "../../lib/api";
 import PrimaryButton from "../components/PrimaryButton";
 import { isValidHabit } from "../utils/validation";
@@ -39,7 +46,10 @@ export default function EditHabitScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
       <View style={styles.card}>
         <Text style={styles.label}>Edit Habit</Text>
         <TextInput
@@ -60,7 +70,7 @@ export default function EditHabitScreen() {
           loading={loading}
         />
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
