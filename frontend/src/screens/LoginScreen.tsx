@@ -65,8 +65,11 @@ const LoginScreen = () => {
   };
 
   const handleAppleLogin = async () => {
+    let credential: AppleAuthentication.AppleAuthenticationCredential | null =
+      null;
+
     try {
-      const credential = await AppleAuthentication.signInAsync({
+      credential = await AppleAuthentication.signInAsync({
         requestedScopes: [
           AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
           AppleAuthentication.AppleAuthenticationScope.EMAIL,
@@ -78,9 +81,11 @@ const LoginScreen = () => {
       }
 
       setLoading(true);
+
       const res = await api.post("/auth/apple", {
         token: credential.identityToken,
       });
+
       await login(res.data.access_token);
       await requestNotificationPermissions();
 
@@ -89,14 +94,38 @@ const LoginScreen = () => {
         text1: "Welcome!",
       });
     } catch (err: any) {
-      if (err.code === "ERR_CANCELED") {
-        return;
+      const isAppleMissingEmail =
+        err.response?.data?.error === "apple_email_missing";
+
+      if (isAppleMissingEmail && credential?.identityToken) {
+        await new Promise((r) => setTimeout(r, 1500));
+
+        try {
+          const retryRes = await api.post("/auth/apple", {
+            token: credential.identityToken,
+          });
+
+          await login(retryRes.data.access_token);
+          await requestNotificationPermissions();
+          Toast.show({ type: "success", text1: "Welcome!" });
+          return;
+        } catch (retryErr) {
+          Toast.show({
+            type: "error",
+            text1: "Apple Sign-In Failed",
+            text2: "Please try again.",
+          });
+          return;
+        }
       }
-      Toast.show({
-        type: "error",
-        text1: "Apple Sign-In Failed",
-        text2: err.message || "Something went wrong",
-      });
+
+      if (err.code !== "ERR_CANCELED") {
+        Toast.show({
+          type: "error",
+          text1: "Apple Sign-In Failed",
+          text2: err.message || "Something went wrong",
+        });
+      }
     } finally {
       setLoading(false);
     }
