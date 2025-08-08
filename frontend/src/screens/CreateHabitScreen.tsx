@@ -1,4 +1,5 @@
 import { useNavigation } from "@react-navigation/native";
+import { AxiosError } from "axios";
 import { format } from "date-fns";
 import React, { useState } from "react";
 import {
@@ -10,10 +11,10 @@ import {
   TextInput,
   View,
 } from "react-native";
+import Ionicons from "react-native-vector-icons/Ionicons";
 import api from "../../lib/api";
 import PrimaryButton from "../components/PrimaryButton";
 import { isValidHabit } from "../utils/validation";
-import Ionicons from "react-native-vector-icons/Ionicons";
 
 export default function CreateHabitScreen() {
   const navigation = useNavigation();
@@ -85,7 +86,7 @@ export default function CreateHabitScreen() {
           loading={loading}
         />
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

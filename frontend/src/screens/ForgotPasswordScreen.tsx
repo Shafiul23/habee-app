@@ -1,13 +1,20 @@
-import React, { useState } from "react";
-import { View, TextInput, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import PrimaryButton from "../components/PrimaryButton";
-import api from "../../lib/api";
-import Toast from "react-native-toast-message";
-import { isValidEmail } from "../utils/validation";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import React, { useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+} from "react-native";
+import Toast from "react-native-toast-message";
+import api from "../../lib/api";
 import { RootStackParamList } from "../../types";
+import PrimaryButton from "../components/PrimaryButton";
+import { isValidEmail } from "../utils/validation";
 
 type NavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -52,7 +59,10 @@ export default function ForgotPasswordScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
       {/* Back Button */}
       <Pressable onPress={() => navigation.goBack()} style={styles.backButton}>
         <Ionicons name="arrow-back" size={24} color="#000" />
@@ -76,7 +86,7 @@ export default function ForgotPasswordScreen() {
         onPress={handleSubmit}
         loading={loading}
       />
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
