@@ -64,6 +64,7 @@ flask db upgrade
 
 ```bash
 flask run
+FLASK_APP=app FLASK_ENV=development flask run --host=0.0.0.0 --port=5050
 ```
 
 The server will be available at:

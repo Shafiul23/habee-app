@@ -71,7 +71,6 @@ def apple_login():
         jwks_url = "https://appleid.apple.com/auth/keys"
         jwk_client = PyJWKClient(jwks_url)
         signing_key = jwk_client.get_signing_key_from_jwt(identity_token)
-        
         decoded = jwt.decode(
             identity_token,
             signing_key.key,
@@ -95,8 +94,12 @@ def apple_login():
             user.apple_id = apple_id
 
     if not user:
-        if not email:
-            return jsonify({"error": "Email not provided; user not found"}), 400
+        if not email or email is None or email.strip() == "":
+            return jsonify({
+                "error": "apple_email_missing",
+                "message": "Apple did not provide an email. Please try again shortly."
+            }), 400
+
         user = User(email=email, apple_id=apple_id)
         user.set_password(str(uuid.uuid4()))
         db.session.add(user)
