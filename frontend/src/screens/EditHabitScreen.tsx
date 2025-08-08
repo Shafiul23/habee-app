@@ -1,10 +1,19 @@
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { AxiosError } from "axios";
 import React, { useState } from "react";
-import { StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { editHabit } from "../../lib/api";
 import PrimaryButton from "../components/PrimaryButton";
 import { isValidHabit } from "../utils/validation";
+import Ionicons from "react-native-vector-icons/Ionicons";
 
 export default function EditHabitScreen() {
   const route = useRoute<any>();
@@ -39,7 +48,18 @@ export default function EditHabitScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      {Platform.OS === "android" && (
+        <Pressable
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
+          <Ionicons name="arrow-back" size={24} color="#000" />
+        </Pressable>
+      )}
       <View style={styles.card}>
         <Text style={styles.label}>Edit Habit</Text>
         <TextInput
@@ -60,7 +80,7 @@ export default function EditHabitScreen() {
           loading={loading}
         />
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -71,6 +91,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
     backgroundColor: "#f2f2f2",
+  },
+  backButton: {
+    position: "absolute",
+    top: 50,
+    left: 20,
+    zIndex: 10,
   },
   card: {
     width: "100%",
