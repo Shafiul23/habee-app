@@ -19,11 +19,17 @@ api.interceptors.request.use(
 );
 
 // Types
+export type HabitPause = {
+  start_date: string;
+  end_date: string | null;
+};
+
 export type Habit = {
   id: number;
   name: string;
   start_date: string;
   completed?: boolean;
+  pauses?: HabitPause[];
 };
 
 export type ArchivedHabit = Habit & {

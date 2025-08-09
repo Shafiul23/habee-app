@@ -199,6 +199,7 @@ def list_habits():
             selected_date = date.fromisoformat(date_str)
         except ValueError:
             return {"error": "Invalid date format. Use YYYY-MM-DD"}, 400
+
         def active(h):
             for p in h.pauses:
                 if p.start_date <= selected_date and (
@@ -206,10 +207,23 @@ def list_habits():
                 ):
                     return False
             return h.start_date <= selected_date
+
         habits = [h for h in habits if active(h)]
 
     return jsonify([
-        {"id": h.id, "name": h.name, "start_date": h.start_date.isoformat()} for h in habits
+        {
+            "id": h.id,
+            "name": h.name,
+            "start_date": h.start_date.isoformat(),
+            "pauses": [
+                {
+                    "start_date": p.start_date.isoformat(),
+                    "end_date": p.end_date.isoformat() if p.end_date else None,
+                }
+                for p in h.pauses
+            ],
+        }
+        for h in habits
     ])
 
 

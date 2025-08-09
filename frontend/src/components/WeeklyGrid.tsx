@@ -95,7 +95,16 @@ export default function WeeklyGrid({
                       const started =
                         isBefore(habitStart, day) || isEqual(habitStart, day);
                       const completed = completedLogs[iso]?.has(habit.id);
-                      const inactive = isFuture || !started;
+                      const paused = habit.pauses?.some((p) => {
+                        const pauseStart = parseISO(p.start_date);
+                        const pauseEnd = p.end_date ? parseISO(p.end_date) : null;
+                        const startsBeforeOrOn =
+                          isBefore(pauseStart, day) || isEqual(pauseStart, day);
+                        const endsAfterOrOn =
+                          !pauseEnd || isAfter(pauseEnd, day) || isEqual(pauseEnd, day);
+                        return startsBeforeOrOn && endsAfterOrOn;
+                      });
+                      const inactive = isFuture || !started || paused;
 
                       return (
                         <GridCell
