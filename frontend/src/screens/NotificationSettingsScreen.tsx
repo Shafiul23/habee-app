@@ -18,12 +18,17 @@ import {
   scheduleDailyReminder,
 } from "../../lib/notifications";
 import PrimaryButton from "../components/PrimaryButton";
+import { useGlobalStyles } from "../styles/theme";
+import { useTheme } from "../contexts/ThemeContext";
 
 export default function NotificationSettingsScreen() {
   const [reminderEnabled, setReminderEnabled] = useState(false);
   const [selectedTime, setSelectedTime] = useState(new Date());
   const [pendingTime, setPendingTime] = useState<Date | null>(null);
   const [editing, setEditing] = useState(false);
+  const globalStyles = useGlobalStyles();
+  const { theme, colors } = useTheme();
+  const styles = getStyles();
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -76,9 +81,9 @@ export default function NotificationSettingsScreen() {
   }, []);
 
   return (
-    <View style={styles.container}>
+    <View style={[globalStyles.screen, styles.container]}>
       <View style={styles.row}>
-        <Text style={styles.title}>Daily Reminder</Text>
+        <Text style={[globalStyles.text, styles.title]}>Daily Reminder</Text>
         <Switch value={reminderEnabled} onValueChange={handleToggleReminder} />
       </View>
 
@@ -86,7 +91,7 @@ export default function NotificationSettingsScreen() {
         <>
           {editing ? (
             <>
-              <Text style={styles.label}>
+              <Text style={[globalStyles.text, styles.label]}>
                 Pick a time for your daily reminder:
               </Text>
               <DateTimePicker
@@ -95,6 +100,8 @@ export default function NotificationSettingsScreen() {
                 is24Hour={false}
                 display={Platform.OS === "ios" ? "spinner" : "default"}
                 onChange={handleTimeChange}
+                themeVariant={theme}
+                textColor={colors.text}
               />
 
               {pendingTime && (
@@ -129,9 +136,9 @@ export default function NotificationSettingsScreen() {
             </>
           ) : (
             <>
-              <Text style={styles.label}>
+              <Text style={[globalStyles.text, styles.label]}>
                 Daily reminder time:{" "}
-                <Text style={styles.timeText}>
+                <Text style={[globalStyles.text, styles.timeText]}>
                   {selectedTime.toLocaleTimeString([], {
                     hour: "2-digit",
                     minute: "2-digit",
@@ -151,33 +158,30 @@ export default function NotificationSettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: "#fff",
-    paddingHorizontal: 20,
-    paddingTop: 40,
-    paddingBottom: 40,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-  },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: "#000",
-  },
-  label: {
-    fontSize: 16,
-    color: "#333",
-    marginBottom: 10,
-  },
-  timeText: {
-    fontWeight: "600",
-    color: "#000",
-  },
-});
+const getStyles = () =>
+  StyleSheet.create({
+    container: {
+      paddingHorizontal: 20,
+      paddingTop: 40,
+      paddingBottom: 40,
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+    },
+    row: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 20,
+    },
+    title: {
+      fontSize: 20,
+      fontWeight: "600",
+    },
+    label: {
+      fontSize: 16,
+      marginBottom: 10,
+    },
+    timeText: {
+      fontWeight: "600",
+    },
+  });

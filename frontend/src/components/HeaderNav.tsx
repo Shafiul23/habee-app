@@ -6,7 +6,6 @@ import {
   Text,
   Pressable,
   StyleSheet,
-  StatusBar,
   StyleProp,
   ViewStyle,
 } from "react-native";
@@ -40,7 +39,6 @@ export default function HeaderNav({
 
   return (
     <View style={[{ backgroundColor: "#f7ce46" }, style]}>
-      <StatusBar barStyle="dark-content" backgroundColor="#f7ce46" />
       <View style={[styles.header, { paddingTop: insets.top }]}>
         <Pressable onPress={onPrev} hitSlop={10}>
           <Ionicons name="chevron-back" size={28} color="#000" />

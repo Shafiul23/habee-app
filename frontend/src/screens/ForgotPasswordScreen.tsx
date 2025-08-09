@@ -15,6 +15,8 @@ import Toast from "react-native-toast-message";
 import { isValidEmail } from "../utils/validation";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../types";
+import { useGlobalStyles } from "../styles/theme";
+import { useTheme } from "../contexts/ThemeContext";
 
 type NavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -26,6 +28,9 @@ export default function ForgotPasswordScreen() {
   const [loading, setLoading] = useState(false);
 
   const navigation = useNavigation<NavigationProp>();
+  const globalStyles = useGlobalStyles();
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
 
   const handleSubmit = async () => {
     if (!isValidEmail(email)) {
@@ -59,13 +64,13 @@ export default function ForgotPasswordScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[globalStyles.screen, styles.container]}>
       {/* Back Button */}
       <Pressable onPress={() => navigation.goBack()} style={styles.backButton}>
-        <Ionicons name="arrow-back" size={24} color="#000" />
+        <Ionicons name="arrow-back" size={24} color={colors.text} />
       </Pressable>
 
-      <Text style={styles.heading}>Forgot Password</Text>
+      <Text style={[globalStyles.text, styles.heading]}>Forgot Password</Text>
 
       <TextInput
         style={styles.input}
@@ -87,13 +92,12 @@ export default function ForgotPasswordScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    padding: 24,
-    backgroundColor: "#f9f9f9",
-  },
+const getStyles = (colors: { background: string; text: string }) =>
+  StyleSheet.create({
+    container: {
+      justifyContent: "center",
+      padding: 24,
+    },
   backButton: {
     position: "absolute",
     top: Platform.OS === "ios" ? 60 : 30,
@@ -105,7 +109,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     textAlign: "center",
     marginBottom: 20,
-    color: "#000",
+    color: colors.text,
   },
   input: {
     height: 50,
@@ -114,8 +118,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 16,
     marginBottom: 20,
-    backgroundColor: "#fff",
-    color: "#000",
+    backgroundColor: colors.background,
+    color: colors.text,
     fontSize: 16,
   },
 });

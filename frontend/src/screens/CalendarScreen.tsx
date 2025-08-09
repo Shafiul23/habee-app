@@ -7,13 +7,17 @@ import HeaderNav from "../components/HeaderNav";
 import Legend from "../components/Legend";
 import LoadingSpinner from "../components/LoadingSpinner";
 import Toast from "react-native-toast-message";
+import { useGlobalStyles } from "../styles/theme";
+import { useTheme } from "../contexts/ThemeContext";
 
 export default function CalendarScreen() {
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [calendarData, setCalendarData] = useState<CalendarSummary>({});
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(false);
-
+  const globalStyles = useGlobalStyles();
+  const { colors } = useTheme();
+  const styles = getStyles(colors);
   const fetchSummary = async (isInitial = false) => {
     if (isInitial) setLoading(true);
     try {
@@ -50,7 +54,7 @@ export default function CalendarScreen() {
   };
 
   return (
-    <>
+    <View style={globalStyles.screen}>
       <HeaderNav
         date={selectedMonth}
         onPrev={handlePrevMonth}
@@ -71,15 +75,16 @@ export default function CalendarScreen() {
           </>
         )}
       </ScrollView>
-    </>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: "center",
-    paddingBottom: 100,
-    backgroundColor: "#fff",
-  },
-});
+const getStyles = (colors: { background: string }) =>
+  StyleSheet.create({
+    scrollContent: {
+      flexGrow: 1,
+      justifyContent: "center",
+      paddingBottom: 100,
+      backgroundColor: colors.background,
+    },
+  });

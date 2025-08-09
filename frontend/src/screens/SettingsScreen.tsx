@@ -13,6 +13,8 @@ import {
 import { RootStackParamList } from "../../types";
 import PrimaryButton from "../components/PrimaryButton";
 import { useAuth } from "../contexts/AuthContext";
+import { useTheme } from "../contexts/ThemeContext";
+import { useGlobalStyles } from "../styles/theme";
 import Toast from "react-native-toast-message";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Main">;
@@ -21,6 +23,9 @@ export default function SettingsScreen() {
   const [loadingDelete, setLoadingDelete] = useState(false);
   const { logout, deleteAccount } = useAuth();
   const navigation = useNavigation<NavigationProp>();
+  const { theme, colors, toggleTheme } = useTheme();
+  const globalStyles = useGlobalStyles();
+  const styles = getStyles(colors);
 
   const handleLogout = async () => {
     try {
@@ -77,14 +82,25 @@ export default function SettingsScreen() {
     );
   };
 
+  const handleToggleTheme = () => {
+    Alert.alert("Toggle Theme", "", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: theme === "light" ? "Enable dark mode" : "Enable light mode",
+        onPress: toggleTheme,
+      },
+    ]);
+  };
+
   return (
     <ScrollView
       contentContainerStyle={styles.scrollContent}
-      style={styles.container}
+      style={[globalStyles.screen, styles.container]}
     >
       <View>
-        <Text style={styles.title}>Settings</Text>
+        <Text style={[globalStyles.text, styles.title]}>Settings</Text>
 
+        <PrimaryButton title="Toggle Theme" onPress={handleToggleTheme} />
         <PrimaryButton
           title="Notifications"
           onPress={() => {
@@ -104,44 +120,39 @@ export default function SettingsScreen() {
       </View>
 
       <View>
-        <Text style={styles.versionText}>
-          Version {Constants.manifest?.version || "1.0.0"}
-        </Text>
+        <Text style={[globalStyles.text, styles.versionText]}>Version {Constants.manifest?.version || "1.0.0"}</Text>
       </View>
     </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    paddingTop: 80,
-    paddingHorizontal: 20,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: "space-between",
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "600",
-    color: "#000",
-    marginBottom: 30,
-  },
-  deleteButton: {
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-    marginTop: 16,
-  },
-  versionText: {
-    // display: "flex",
-    // justifyContent: "flex-end",
-    textAlign: "center",
-    fontSize: 14,
-    color: "#999",
-    marginTop: 40,
-    marginBottom: 20,
-  },
-});
+const getStyles = (colors: { background: string; text: string }) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      paddingTop: 80,
+      paddingHorizontal: 20,
+    },
+    scrollContent: {
+      flexGrow: 1,
+      justifyContent: "space-between",
+    },
+    title: {
+      fontSize: 28,
+      fontWeight: "600",
+      marginBottom: 30,
+    },
+    deleteButton: {
+      backgroundColor: colors.background,
+      borderWidth: 1,
+      borderColor: "#e0e0e0",
+      marginTop: 16,
+    },
+    versionText: {
+      textAlign: "center",
+      fontSize: 14,
+      color: "#999",
+      marginTop: 40,
+      marginBottom: 20,
+    },
+  });
