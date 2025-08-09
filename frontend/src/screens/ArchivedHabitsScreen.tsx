@@ -1,13 +1,23 @@
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import React, { useCallback, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, Pressable } from "react-native";
-import { ArchivedHabit, getArchivedHabits, unarchiveHabit, deleteHabit } from "../../lib/api";
+import { View, Text, StyleSheet, ScrollView, Alert } from "react-native";
+import Toast from "react-native-toast-message";
+import {
+  ArchivedHabit,
+  getArchivedHabits,
+  unarchiveHabit,
+  deleteHabit,
+} from "../../lib/api";
 import LoadingSpinner from "../components/LoadingSpinner";
 import PrimaryButton from "../components/PrimaryButton";
+import ArchivedHabitItem from "../components/ArchivedHabitItem";
+import HabitMenu from "../components/HabitMenu";
 
 export default function ArchivedHabitsScreen() {
   const [habits, setHabits] = useState<ArchivedHabit[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showHabitMenu, setShowHabitMenu] = useState<number | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const navigation = useNavigation();
 
   const load = async () => {
@@ -27,13 +37,47 @@ export default function ArchivedHabitsScreen() {
   );
 
   const handleUnarchive = async (id: number) => {
-    await unarchiveHabit(id);
-    load();
+    try {
+      await unarchiveHabit(id);
+      setShowHabitMenu(null);
+      load();
+    } catch (err: any) {
+      Toast.show({
+        type: "error",
+        text1: "Error unarchiving habit",
+        text2: err.response?.data?.error || "Server unreachable.",
+      });
+    }
   };
 
-  const handleDelete = async (id: number) => {
-    await deleteHabit(id);
-    load();
+  const handleDeleteHabit = (id: number) => {
+    Alert.alert(
+      "Delete habit?",
+      "Are you sure you want to delete this habit? This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            setDeletingId(id);
+            try {
+              await deleteHabit(id);
+              setShowHabitMenu(null);
+              load();
+            } catch (err: any) {
+              Toast.show({
+                type: "error",
+                text1: "Error deleting habit",
+                text2: err.response?.data?.error || "Server unreachable.",
+              });
+            } finally {
+              setDeletingId(null);
+            }
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -46,21 +90,23 @@ export default function ArchivedHabitsScreen() {
       ) : (
         <ScrollView>
           {habits.map((h) => (
-            <View key={h.id} style={styles.item}>
-              <Text style={styles.name}>{h.name}</Text>
-              <View style={styles.actions}>
-                <Pressable onPress={() => handleUnarchive(h.id)}>
-                  <Text style={styles.actionText}>Unarchive</Text>
-                </Pressable>
-                <Pressable onPress={() => handleDelete(h.id)} style={{ marginLeft: 12 }}>
-                  <Text style={[styles.actionText, { color: "red" }]}>Delete</Text>
-                </Pressable>
-              </View>
-            </View>
+            <ArchivedHabitItem
+              key={h.id}
+              item={h}
+              onShowMenu={() => setShowHabitMenu(h.id)}
+            />
           ))}
         </ScrollView>
       )}
       <PrimaryButton title="Close" onPress={() => navigation.goBack()} />
+      {showHabitMenu !== null && (
+        <HabitMenu
+          onClose={() => setShowHabitMenu(null)}
+          onUnarchive={() => handleUnarchive(showHabitMenu)}
+          onDelete={() => handleDeleteHabit(showHabitMenu)}
+          deleting={deletingId === showHabitMenu}
+        />
+      )}
     </View>
   );
 }
@@ -81,23 +127,5 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 20,
     color: "#555",
-  },
-  item: {
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderColor: "#eee",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  name: {
-    fontSize: 18,
-  },
-  actions: {
-    flexDirection: "row",
-  },
-  actionText: {
-    fontSize: 14,
-    color: "blue",
   },
 });

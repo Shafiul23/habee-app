@@ -5,24 +5,29 @@ import PrimaryButton from "./PrimaryButton";
 
 type HabitMenuProps = {
   onClose: () => void;
-  onEdit: () => void;
+  onEdit?: () => void;
+  onArchive?: () => void;
+  onUnarchive?: () => void;
   onDelete: () => void;
-  onArchive: () => void;
   deleting: boolean;
 };
 
 export default function HabitMenu({
   onClose,
   onEdit,
-  onDelete,
   onArchive,
+  onUnarchive,
+  onDelete,
   deleting,
 }: HabitMenuProps) {
   return (
     <Pressable style={styles.overlay} onPress={onClose}>
       <Pressable style={styles.menuBox}>
-        <PrimaryButton title="Edit Habit" onPress={onEdit} />
-        <PrimaryButton title="Archive Habit" onPress={onArchive} />
+        {onEdit && <PrimaryButton title="Edit Habit" onPress={onEdit} />}
+        {onArchive && <PrimaryButton title="Archive Habit" onPress={onArchive} />}
+        {onUnarchive && (
+          <PrimaryButton title="Unarchive Habit" onPress={onUnarchive} />
+        )}
         <PrimaryButton
           title="Delete Habit"
           onPress={onDelete}
