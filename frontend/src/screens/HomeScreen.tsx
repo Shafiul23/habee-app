@@ -20,6 +20,7 @@ import {
   getHabitSummary,
   logHabit,
   undoHabit,
+  archiveHabit,
 } from "../../lib/api";
 import { RootStackParamList } from "../../types";
 import HabitItem from "../components/HabitItem";
@@ -134,6 +135,33 @@ export default function Home() {
     );
   };
 
+  const handleArchiveHabit = (habitId: number) => {
+    Alert.alert(
+      "Archive habit?",
+      "It will be hidden from your Home screen for future dates. Past progress stays visible. You can unarchive it anytime.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Archive",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await archiveHabit(habitId);
+              setShowHabitMenu(null);
+              loadHabits(true);
+            } catch (err: any) {
+              Toast.show({
+                type: "error",
+                text1: "Error archiving habit",
+                text2: err.response?.data?.error || "Server unreachable.",
+              });
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <>
       <HeaderNav
@@ -150,9 +178,17 @@ export default function Home() {
           }
         >
           <View style={styles.innerContainer}>
-            <Text style={styles.objectivesTitle}>
-              {format(date, "EEEE")} Habits
-            </Text>
+            <View style={styles.titleRow}>
+              <Text style={styles.objectivesTitle}>
+                {format(date, "EEEE")} Habits
+              </Text>
+              <Pressable
+                onPress={() => navigation.navigate("ArchivedHabits")}
+                hitSlop={10}
+              >
+                <Ionicons name="archive-outline" size={24} color="#000" />
+              </Pressable>
+            </View>
 
             {loading ? (
               <LoadingSpinner size="large" />
@@ -209,6 +245,7 @@ export default function Home() {
             });
           }}
           onDelete={() => handleDeleteHabit(showHabitMenu)}
+          onArchive={() => handleArchiveHabit(showHabitMenu)}
           deleting={deletingId === showHabitMenu}
         />
       )}
@@ -226,14 +263,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     minHeight: "100%",
   },
+  titleRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 20,
+    marginBottom: 16,
+    backgroundColor: "#fff",
+  },
   objectivesTitle: {
     fontSize: 24,
     fontWeight: "700",
-    marginBottom: 16,
-    marginTop: 20,
     color: "#000",
-    textAlign: "center",
-    backgroundColor: "#fff",
   },
   fab: {
     position: "absolute",

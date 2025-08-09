@@ -1,8 +1,8 @@
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { AxiosError } from "axios";
 import React, { useState } from "react";
-import { StyleSheet, Text, TextInput, View } from "react-native";
-import { editHabit } from "../../lib/api";
+import { Alert, StyleSheet, Text, TextInput, View } from "react-native";
+import { editHabit, unarchiveHabit } from "../../lib/api";
 import PrimaryButton from "../components/PrimaryButton";
 import { isValidHabit } from "../utils/validation";
 
@@ -29,10 +29,35 @@ export default function EditHabitScreen() {
       await editHabit(habitId, name.trim());
       navigation.goBack();
     } catch (err) {
-      const error = err as AxiosError<{ error?: string }>;
-      const errorMsg = error?.response?.data?.error || "Please try again later";
-
-      setError(errorMsg);
+      const error = err as AxiosError<any>;
+      if (error.response?.status === 409) {
+        const data = error.response.data;
+        if (data.error === "duplicate_name_archived") {
+          Alert.alert(
+            "Habit exists",
+            `You already have an archived habit named '${name.trim()}'. Unarchive it instead, or choose a different name.`,
+            [
+              {
+                text: "Unarchive",
+                onPress: async () => {
+                  await unarchiveHabit(data.archivedHabitId);
+                  navigation.goBack();
+                },
+              },
+              { text: "Choose different name", style: "cancel" },
+            ]
+          );
+        } else if (data.error === "duplicate_name_active") {
+          setError(
+            `You already have an active habit named '${name.trim()}'. Choose a different name.`
+          );
+        } else {
+          setError(data.error || "Please try again later");
+        }
+      } else {
+        const errorMsg = error?.response?.data?.error || "Please try again later";
+        setError(errorMsg);
+      }
     } finally {
       setLoading(false);
     }

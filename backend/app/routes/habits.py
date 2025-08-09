@@ -5,6 +5,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.extensions import db
 from app.models.habit import Habit
 from app.models.log import HabitLog
+from app.models.habit_pause import HabitPause
 from datetime import date, datetime, timedelta
 from collections import defaultdict
 from calendar import monthrange
@@ -39,7 +40,13 @@ def create_habit():
     ).first()
 
     if existing:
-        return jsonify({"error": "You already have a habit with this name"}), 400
+        paused = HabitPause.query.filter_by(habit_id=existing.id, end_date=None).first()
+        if paused:
+            return (
+                jsonify({"error": "duplicate_name_archived", "archivedHabitId": existing.id}),
+                409,
+            )
+        return jsonify({"error": "duplicate_name_active"}), 409
 
     try:
         start_date = date.fromisoformat(start_date_str) if start_date_str else date.today()
@@ -85,7 +92,13 @@ def update_habit(habit_id):
     ).first()
 
     if existing:
-        return jsonify({"error": "You already have a habit with this name"}), 400
+        paused = HabitPause.query.filter_by(habit_id=existing.id, end_date=None).first()
+        if paused:
+            return (
+                jsonify({"error": "duplicate_name_archived", "archivedHabitId": existing.id}),
+                409,
+            )
+        return jsonify({"error": "duplicate_name_active"}), 409
 
     habit.name = new_name
     db.session.commit()
@@ -115,11 +128,85 @@ def delete_habit(habit_id):
     return jsonify({"message": "Habit deleted successfully"})
 
 
+@habits_bp.route("/<int:habit_id>/archive", methods=["POST"])
+@jwt_required()
+def archive_habit(habit_id):
+    user_id = get_jwt_identity()
+    habit = Habit.query.filter_by(id=habit_id, user_id=user_id).first()
+    if not habit:
+        return {"error": "Habit not found"}, 404
+
+    open_pause = HabitPause.query.filter_by(habit_id=habit_id, end_date=None).first()
+    if not open_pause:
+        pause = HabitPause(habit_id=habit_id, start_date=date.today())
+        db.session.add(pause)
+        db.session.commit()
+
+    return jsonify({"habit": {"id": habit.id, "name": habit.name}})
+
+
+@habits_bp.route("/<int:habit_id>/unarchive", methods=["POST"])
+@jwt_required()
+def unarchive_habit(habit_id):
+    user_id = get_jwt_identity()
+    habit = Habit.query.filter_by(id=habit_id, user_id=user_id).first()
+    if not habit:
+        return {"error": "Habit not found"}, 404
+
+    open_pause = HabitPause.query.filter_by(habit_id=habit_id, end_date=None).first()
+    if open_pause:
+        open_pause.end_date = date.today() - timedelta(days=1)
+        db.session.commit()
+
+    return jsonify({"habit": {"id": habit.id, "name": habit.name}})
+
+
+@habits_bp.route("/archived", methods=["GET"])
+@jwt_required()
+def archived_habits():
+    user_id = get_jwt_identity()
+    habits = (
+        Habit.query.filter(Habit.user_id == user_id)
+        .join(HabitPause)
+        .filter(HabitPause.end_date.is_(None))
+        .all()
+    )
+
+    result = []
+    for h in habits:
+        pause = next((p for p in h.pauses if p.end_date is None), None)
+        result.append(
+            {
+                "id": h.id,
+                "name": h.name,
+                "start_date": h.start_date.isoformat(),
+                "pause_start_date": pause.start_date.isoformat() if pause else None,
+            }
+        )
+
+    return jsonify(result)
+
+
 @habits_bp.route("/", methods=["GET"])
 @jwt_required()
 def list_habits():
     user_id = get_jwt_identity()
+    date_str = request.args.get("date")
     habits = Habit.query.filter_by(user_id=user_id).all()
+
+    if date_str:
+        try:
+            selected_date = date.fromisoformat(date_str)
+        except ValueError:
+            return {"error": "Invalid date format. Use YYYY-MM-DD"}, 400
+        def active(h):
+            for p in h.pauses:
+                if p.start_date <= selected_date and (
+                    p.end_date is None or p.end_date >= selected_date
+                ):
+                    return False
+            return h.start_date <= selected_date
+        habits = [h for h in habits if active(h)]
 
     return jsonify([
         {"id": h.id, "name": h.name, "start_date": h.start_date.isoformat()} for h in habits
@@ -233,13 +320,23 @@ def daily_summary():
     except ValueError:
         return {"error": "Invalid date format. Use YYYY-MM-DD"}, 400
 
-    # Get all user's habits active on this date
+    # Get all user's habits and filter by active status on this date
     habits = Habit.query.filter(
         Habit.user_id == user_id,
         Habit.start_date <= selected_date
     ).all()
 
-    habit_ids = [h.id for h in habits]
+    def is_active(h):
+        for p in h.pauses:
+            if p.start_date <= selected_date and (
+                p.end_date is None or p.end_date >= selected_date
+            ):
+                return False
+        return True
+
+    active_habits = [h for h in habits if is_active(h)]
+
+    habit_ids = [h.id for h in active_habits]
 
     # Get logs for this date
     logs = HabitLog.query.filter(
@@ -251,7 +348,7 @@ def daily_summary():
 
     # Return habit list with completed status
     summary = []
-    for habit in habits:
+    for habit in active_habits:
         summary.append({
             "id": habit.id,
             "name": habit.name,
@@ -311,7 +408,17 @@ def calendar_summary():
             continue
 
         # Get habits active on that day
-        active_habits = [h for h in habits if h.start_date <= day]
+        def is_active(h):
+            if h.start_date > day:
+                return False
+            for p in h.pauses:
+                if p.start_date <= day and (
+                    p.end_date is None or p.end_date >= day
+                ):
+                    return False
+            return True
+
+        active_habits = [h for h in habits if is_active(h)]
         total = len(active_habits)
 
         if total == 0:
