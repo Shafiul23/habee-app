@@ -7,6 +7,7 @@ type HabitMenuProps = {
   onClose: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onArchive: () => void;
   deleting: boolean;
 };
 
@@ -14,12 +15,14 @@ export default function HabitMenu({
   onClose,
   onEdit,
   onDelete,
+  onArchive,
   deleting,
 }: HabitMenuProps) {
   return (
     <Pressable style={styles.overlay} onPress={onClose}>
       <Pressable style={styles.menuBox}>
         <PrimaryButton title="Edit Habit" onPress={onEdit} />
+        <PrimaryButton title="Archive Habit" onPress={onArchive} />
         <PrimaryButton
           title="Delete Habit"
           onPress={onDelete}
