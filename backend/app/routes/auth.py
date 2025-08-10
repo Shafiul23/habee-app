@@ -88,7 +88,7 @@ def login():
 
 
 @auth_bp.route("/apple", methods=["POST"])
-# @retry_on_operational_error
+@retry_on_operational_error
 def apple_login():
     data = request.get_json(silent=True) or {}
     identity_token = data.get("token")
