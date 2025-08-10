@@ -1,19 +1,19 @@
-import React, { useEffect, useState } from "react";
-import {
-  View,
-  TextInput,
-  Text,
-  StyleSheet,
-  Pressable,
-  Platform,
-} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../../types";
-import PrimaryButton from "../components/PrimaryButton";
+import React, { useEffect, useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+} from "react-native";
 import Toast from "react-native-toast-message";
 import api from "../../lib/api";
-import { Ionicons } from "@expo/vector-icons";
+import { RootStackParamList } from "../../types";
+import PrimaryButton from "../components/PrimaryButton";
 
 type NavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -80,7 +80,10 @@ export default function ResetPasswordScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
       <Pressable onPress={() => navigation.goBack()} style={styles.backButton}>
         <Ionicons name="arrow-back" size={24} color="#000" />
       </Pressable>
@@ -114,7 +117,7 @@ export default function ResetPasswordScreen() {
           Invalid or expired token
         </Text>
       )}
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

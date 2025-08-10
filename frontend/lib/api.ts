@@ -76,6 +76,11 @@ export const getCalendarSummary = async (
   return res.data;
 };
 
+export const getArchivedHabits = async (): Promise<ArchivedHabit[]> => {
+  const res = await api.get(`/habits/archived`);
+  return res.data;
+};
+
 export const logHabit = async (habitId: number, date: string) => {
   await api.post(`/habits/${habitId}/log`, { date });
 };
@@ -90,11 +95,6 @@ export const archiveHabit = async (habitId: number) => {
 
 export const unarchiveHabit = async (habitId: number) => {
   await api.post(`/habits/${habitId}/unarchive`);
-};
-
-export const getArchivedHabits = async (): Promise<ArchivedHabit[]> => {
-  const res = await api.get(`/habits/archived`);
-  return res.data;
 };
 
 export const editHabit = async (id: number, name: string) => {

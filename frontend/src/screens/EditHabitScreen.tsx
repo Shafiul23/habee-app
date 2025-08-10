@@ -1,7 +1,15 @@
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { AxiosError } from "axios";
 import React, { useState } from "react";
-import { Alert, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { editHabit, unarchiveHabit } from "../../lib/api";
 import PrimaryButton from "../components/PrimaryButton";
 import { isValidHabit } from "../utils/validation";
@@ -55,7 +63,8 @@ export default function EditHabitScreen() {
           setError(data.error || "Please try again later");
         }
       } else {
-        const errorMsg = error?.response?.data?.error || "Please try again later";
+        const errorMsg =
+          error?.response?.data?.error || "Please try again later";
         setError(errorMsg);
       }
     } finally {
@@ -64,7 +73,10 @@ export default function EditHabitScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
       <View style={styles.card}>
         <Text style={styles.label}>Edit Habit</Text>
         <TextInput
@@ -85,7 +97,7 @@ export default function EditHabitScreen() {
           loading={loading}
         />
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

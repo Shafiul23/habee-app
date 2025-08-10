@@ -1,11 +1,19 @@
 import { useNavigation } from "@react-navigation/native";
+import { AxiosError } from "axios";
 import { format } from "date-fns";
 import React, { useState } from "react";
-import { Alert, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import api, { unarchiveHabit } from "../../lib/api";
 import PrimaryButton from "../components/PrimaryButton";
 import { isValidHabit } from "../utils/validation";
-import { AxiosError } from "axios";
 
 export default function CreateHabitScreen() {
   const navigation = useNavigation();
@@ -59,7 +67,8 @@ export default function CreateHabitScreen() {
           setError(data.error || "Please try again later");
         }
       } else {
-        const errorMsg = error?.response?.data?.error || "Please try again later";
+        const errorMsg =
+          error?.response?.data?.error || "Please try again later";
         setError(errorMsg);
       }
     } finally {
@@ -68,7 +77,10 @@ export default function CreateHabitScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
       <View style={styles.card}>
         <Text style={styles.label}>New Habit</Text>
         <TextInput
@@ -92,7 +104,7 @@ export default function CreateHabitScreen() {
           loading={loading}
         />
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
