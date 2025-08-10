@@ -5,14 +5,17 @@ import { StyleSheet, View } from "react-native";
 type Props = {
   completed: boolean;
   inactive: boolean;
+  paused: boolean;
   size: number;
 };
 
-export default function GridCell({ completed, inactive, size }: Props) {
+export default function GridCell({ completed, inactive, paused, size }: Props) {
   let bgColor = "#eee";
 
   if (inactive) {
     bgColor = "#e5e5e5";
+  } else if (paused) {
+    bgColor = "#909090";
   } else if (completed) {
     bgColor = "#52c41a";
   } else {

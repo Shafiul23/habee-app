@@ -12,6 +12,7 @@ import EditHabitScreen from "../screens/EditHabitScreen";
 import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
 import ResetPasswordScreen from "../screens/ResetPasswordScreen";
 import NotificationSettingsScreen from "../screens/NotificationSettingsScreen";
+import ArchivedHabitsScreen from "../screens/ArchivedHabitsScreen";
 import * as Linking from "expo-linking";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -47,6 +48,11 @@ export default function AppNavigator() {
             <Stack.Screen
               name="NotificationSettings"
               component={NotificationSettingsScreen}
+              options={{ presentation: "modal" }}
+            />
+            <Stack.Screen
+              name="ArchivedHabits"
+              component={ArchivedHabitsScreen}
               options={{ presentation: "modal" }}
             />
           </>

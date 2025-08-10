@@ -19,11 +19,21 @@ api.interceptors.request.use(
 );
 
 // Types
+export type HabitPause = {
+  start_date: string;
+  end_date: string | null;
+};
+
 export type Habit = {
   id: number;
   name: string;
   start_date: string;
   completed?: boolean;
+  pauses?: HabitPause[];
+};
+
+export type ArchivedHabit = Habit & {
+  pause_start_date: string;
 };
 
 export type CalendarSummary = {
@@ -35,8 +45,8 @@ export type CalendarSummary = {
 };
 
 // API Calls
-export const getHabits = async (): Promise<Habit[]> => {
-  const res = await api.get("/habits");
+export const getHabits = async (date?: string): Promise<Habit[]> => {
+  const res = await api.get(date ? `/habits?date=${date}` : `/habits`);
   return res.data;
 };
 
@@ -72,6 +82,19 @@ export const logHabit = async (habitId: number, date: string) => {
 
 export const undoHabit = async (habitId: number, date: string) => {
   await api.post(`/habits/${habitId}/unlog`, { date });
+};
+
+export const archiveHabit = async (habitId: number) => {
+  await api.post(`/habits/${habitId}/archive`);
+};
+
+export const unarchiveHabit = async (habitId: number) => {
+  await api.post(`/habits/${habitId}/unarchive`);
+};
+
+export const getArchivedHabits = async (): Promise<ArchivedHabit[]> => {
+  const res = await api.get(`/habits/archived`);
+  return res.data;
 };
 
 export const editHabit = async (id: number, name: string) => {

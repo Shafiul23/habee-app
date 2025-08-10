@@ -8,6 +8,7 @@ export type RootStackParamList = {
   ForgotPassword: undefined;
   ResetPassword: { token: string };
   NotificationSettings: undefined;
+  ArchivedHabits: undefined;
 };
 
 export type TabParamList = {
