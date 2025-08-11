@@ -5,9 +5,11 @@ import Toast from "react-native-toast-message";
 import PrimaryButton from "./PrimaryButton";
 import {
   getHabitReminderTime,
+  getHabitReminderCount,
   saveHabitReminder,
   removeHabitReminder,
   ReminderTime,
+  MAX_REMINDERS,
 } from "../../lib/habitReminders";
 
 type Props = {
@@ -36,6 +38,17 @@ export default function HabitReminderModal({ habitId, habitName, onClose }: Prop
   }, [habitId]);
 
   const handleSave = async () => {
+    if (!hasReminder) {
+      const count = await getHabitReminderCount();
+      if (count >= MAX_REMINDERS) {
+        Toast.show({
+          type: "info",
+          text1: `You can set up to ${MAX_REMINDERS} reminders.`,
+        });
+        onClose();
+        return;
+      }
+    }
     const reminder: ReminderTime = {
       hour: time.getHours(),
       minute: time.getMinutes(),

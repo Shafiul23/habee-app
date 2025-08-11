@@ -5,6 +5,8 @@ import { SchedulableTriggerInputTypes } from "expo-notifications";
 const TIME_KEY_PREFIX = "habitReminderTime:";
 const NOTIF_KEY_PREFIX = "habitReminderNotificationId:";
 
+export const MAX_REMINDERS = 20;
+
 function getTimeKey(habitId: number): string {
   return `${TIME_KEY_PREFIX}${habitId}`;
 }
@@ -17,6 +19,11 @@ export type ReminderTime = {
   hour: number;
   minute: number;
 };
+
+export async function getHabitReminderCount(): Promise<number> {
+  const keys = await AsyncStorage.getAllKeys();
+  return keys.filter((k) => k.startsWith(TIME_KEY_PREFIX)).length;
+}
 
 export async function getHabitReminderTime(
   habitId: number
