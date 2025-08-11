@@ -8,17 +8,20 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  Pressable,
   View,
 } from "react-native";
 import { RootStackParamList } from "../../types";
 import PrimaryButton from "../components/PrimaryButton";
 import { useAuth } from "../contexts/AuthContext";
 import Toast from "react-native-toast-message";
+import { Ionicons } from "@expo/vector-icons";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Main">;
 
 export default function SettingsScreen() {
   const [loadingDelete, setLoadingDelete] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
   const { logout, deleteAccount } = useAuth();
   const navigation = useNavigation<NavigationProp>();
 
@@ -93,6 +96,26 @@ export default function SettingsScreen() {
         />
         <PrimaryButton title="Support Habee" onPress={handleSupport} />
         <PrimaryButton title="Log Out" onPress={handleLogout} />
+        <View>
+          <Pressable
+            style={styles.aboutButton}
+            onPress={() => setShowAbout((prev) => !prev)}
+          >
+            <Text style={styles.aboutButtonText}>About</Text>
+            <Ionicons
+              name={showAbout ? "chevron-down" : "chevron-forward"}
+              size={20}
+              color="#000"
+            />
+          </Pressable>
+          {showAbout && (
+            <Text style={styles.aboutText}>
+              Habee is built by a solo developer who believes in an ad-free
+              experience. Support the app if you wish—your help keeps it
+              running.
+            </Text>
+          )}
+        </View>
         <PrimaryButton
           title="Delete Account"
           onPress={handleDeleteAccount}
@@ -128,6 +151,27 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#000",
     marginBottom: 30,
+  },
+  aboutButton: {
+    backgroundColor: "#f7ce46",
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    borderRadius: 12,
+    marginVertical: 6,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  aboutButtonText: {
+    color: "#000",
+    fontWeight: "700",
+    fontSize: 16,
+  },
+  aboutText: {
+    fontSize: 14,
+    color: "#000",
+    marginTop: 8,
+    marginHorizontal: 4,
   },
   deleteButton: {
     backgroundColor: "#fff",
