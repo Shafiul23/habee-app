@@ -3,7 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { addDays, format, isToday, subDays } from "date-fns";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import {
   Alert,
   Pressable,
@@ -34,6 +34,8 @@ import {
   cancelHabitReminder,
   removeHabitReminder,
 } from "../../lib/habitReminders";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import InfoTooltip from "../components/InfoTooltip";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Main">;
 
@@ -46,8 +48,24 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [error, setError] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
 
   const navigation = useNavigation<NavigationProp>();
+
+  useEffect(() => {
+    const checkFirstLaunch = async () => {
+      const seen = await AsyncStorage.getItem("hasSeenInfoTooltip");
+      if (!seen) {
+        setShowInfo(true);
+      }
+    };
+    checkFirstLaunch();
+  }, []);
+
+  const handleCloseInfo = async () => {
+    setShowInfo(false);
+    await AsyncStorage.setItem("hasSeenInfoTooltip", "true");
+  };
 
   const loadHabits = async (isInitial = false, givenDate = date) => {
     if (isInitial) setLoading(true);
@@ -190,12 +208,21 @@ export default function Home() {
               <Text style={styles.objectivesTitle}>
                 {format(date, "EEEE")} Habits
               </Text>
-              <Pressable
-                onPress={() => navigation.navigate("ArchivedHabits")}
-                hitSlop={10}
-              >
-                <Ionicons name="archive-outline" size={24} color="#000" />
-              </Pressable>
+              <View style={styles.iconRow}>
+                <Pressable
+                  onPress={() => navigation.navigate("ArchivedHabits")}
+                  hitSlop={10}
+                >
+                  <Ionicons name="archive-outline" size={24} color="#000" />
+                </Pressable>
+                <Pressable onPress={() => setShowInfo(true)} hitSlop={10}>
+                  <Ionicons
+                    name="help-circle-outline"
+                    size={24}
+                    color="#000"
+                  />
+                </Pressable>
+              </View>
             </View>
 
             {loading ? (
@@ -271,6 +298,7 @@ export default function Home() {
           onClose={() => setReminderHabit(null)}
         />
       )}
+      {showInfo && <InfoTooltip onClose={handleCloseInfo} />}
     </>
   );
 }
@@ -292,6 +320,11 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 16,
     backgroundColor: "#fff",
+  },
+  iconRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
   },
   objectivesTitle: {
     fontSize: 24,
