@@ -8,17 +8,20 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  Pressable,
   View,
 } from "react-native";
 import { RootStackParamList } from "../../types";
 import PrimaryButton from "../components/PrimaryButton";
 import { useAuth } from "../contexts/AuthContext";
 import Toast from "react-native-toast-message";
+import { Ionicons } from "@expo/vector-icons";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Main">;
 
 export default function SettingsScreen() {
   const [loadingDelete, setLoadingDelete] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
   const { logout, deleteAccount } = useAuth();
   const navigation = useNavigation<NavigationProp>();
 
@@ -28,7 +31,7 @@ export default function SettingsScreen() {
     } catch (err: any) {
       Toast.show({
         type: "error",
-        text1: "Error loading habits",
+        text1: "Error logging out",
         text2: err.message || "Something went wrong while logging out.",
       });
     }
@@ -84,7 +87,6 @@ export default function SettingsScreen() {
     >
       <View>
         <Text style={styles.title}>Settings</Text>
-
         <PrimaryButton
           title="Notifications"
           onPress={() => {
@@ -93,6 +95,38 @@ export default function SettingsScreen() {
         />
         <PrimaryButton title="Support Habee" onPress={handleSupport} />
         <PrimaryButton title="Log Out" onPress={handleLogout} />
+        <View>
+          <Pressable
+            style={styles.aboutButton}
+            onPress={() => setShowAbout((prev) => !prev)}
+          >
+            <Ionicons
+              name={showAbout ? "chevron-down" : "chevron-forward"}
+              size={20}
+              color="#000"
+              style={styles.aboutIconLeft}
+            />
+
+            <Text style={styles.aboutButtonText}>About</Text>
+
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color="transparent"
+              style={styles.aboutIconRight}
+            />
+          </Pressable>
+
+          {showAbout && (
+            <View style={styles.aboutCard}>
+              <Text style={styles.aboutBody}>
+                {`Habee is built by a solo developer to replace clunky spreadsheet tracking with a clean, intuitive habit-tracking experience. Other apps often feel cluttered, overly complex, hidden behind paywalls, or filled with ads.
+
+Habee focuses on simplicity, visual progress, and an ad-free experience. Supporting Habee helps cover ongoing running costs — from hosting and databases to keeping the app free of ads and unnecessary barriers.`}
+              </Text>
+            </View>
+          )}
+        </View>
         <PrimaryButton
           title="Delete Account"
           onPress={handleDeleteAccount}
@@ -105,7 +139,7 @@ export default function SettingsScreen() {
 
       <View>
         <Text style={styles.versionText}>
-          Version {Constants.manifest?.version || "1.0.0"}
+          Version {Constants.expoConfig?.version || "1.0.0"}
         </Text>
       </View>
     </ScrollView>
@@ -129,6 +163,45 @@ const styles = StyleSheet.create({
     color: "#000",
     marginBottom: 30,
   },
+  aboutButton: {
+    backgroundColor: "#f7ce46",
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginVertical: 6,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  aboutIconLeft: {
+    width: 24,
+    textAlign: "left",
+  },
+  aboutIconRight: {
+    width: 24,
+    textAlign: "right",
+  },
+  aboutButtonText: {
+    color: "#000",
+    fontWeight: "700",
+    fontSize: 16,
+    textAlign: "center",
+    flexShrink: 1,
+  },
+  aboutCard: {
+    marginTop: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    backgroundColor: "#f6f7f8",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#e9ecef",
+  },
+  aboutBody: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: "#333",
+  },
   deleteButton: {
     backgroundColor: "#fff",
     borderWidth: 1,
@@ -136,8 +209,6 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   versionText: {
-    // display: "flex",
-    // justifyContent: "flex-end",
     textAlign: "center",
     fontSize: 14,
     color: "#999",
