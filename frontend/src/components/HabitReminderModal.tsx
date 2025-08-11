@@ -18,7 +18,11 @@ type Props = {
   onClose: () => void;
 };
 
-export default function HabitReminderModal({ habitId, habitName, onClose }: Props) {
+export default function HabitReminderModal({
+  habitId,
+  habitName,
+  onClose,
+}: Props) {
   const [time, setTime] = useState<Date>(new Date());
   const [hasReminder, setHasReminder] = useState(false);
 
@@ -77,7 +81,7 @@ export default function HabitReminderModal({ habitId, habitName, onClose }: Prop
           value={time}
           mode="time"
           is24Hour={true}
-          display={Platform.OS === "ios" ? "spinner" : "default"}
+          display="spinner"
           onChange={(_, selected) => {
             if (selected) setTime(selected);
           }}

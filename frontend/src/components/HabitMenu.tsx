@@ -46,15 +46,17 @@ export default function HabitMenu({
     <Pressable style={styles.overlay} onPress={onClose}>
       <Pressable style={styles.menuBox}>
         {onEdit && <PrimaryButton title="Edit Habit" onPress={onEdit} />}
-        {onArchive && <PrimaryButton title="Archive Habit" onPress={onArchive} />}
+        {onArchive && (
+          <PrimaryButton title="Archive Habit" onPress={onArchive} />
+        )}
         {onUnarchive && (
           <PrimaryButton title="Unarchive Habit" onPress={onUnarchive} />
         )}
         {habitId !== undefined && onReminder && (
-          <Pressable style={styles.reminderButton} onPress={onReminder}>
-            <Text style={styles.reminderTitle}>Custom Reminder</Text>
+          <>
+            <PrimaryButton title="Custom Reminder" onPress={onReminder} />
             <Text style={styles.reminderSubtitle}>{subtitle}</Text>
-          </Pressable>
+          </>
         )}
         <PrimaryButton
           title="Delete Habit"
@@ -91,22 +93,10 @@ const styles = StyleSheet.create({
     width: 300,
     elevation: 5,
   },
-  reminderButton: {
-    backgroundColor: "#fff",
-    paddingVertical: 14,
-    paddingHorizontal: 28,
-    borderRadius: 12,
-    marginVertical: 6,
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-  },
-  reminderTitle: {
-    color: "#000",
-    fontWeight: "700",
-    fontSize: 16,
-  },
   reminderSubtitle: {
     color: "#555",
     fontSize: 14,
+    textAlign: "center",
+    marginVertical: 10,
   },
 });
