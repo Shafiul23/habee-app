@@ -3,7 +3,7 @@
     "name": "Habee",
     "slug": "habee",
     "scheme": "habee",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -14,7 +14,7 @@
       "backgroundColor": "#f7ce46"
     },
     "ios": {
-      "buildNumber": "1.1.0",
+      "buildNumber": "1.1.1",
       "supportsTablet": true,
       "bundleIdentifier": "com.habeeapp.habee",
       "usesAppleSignIn": true,
