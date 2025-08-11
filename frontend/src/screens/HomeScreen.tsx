@@ -209,18 +209,14 @@ export default function Home() {
                 {format(date, "EEEE")} Habits
               </Text>
               <View style={styles.iconRow}>
+                <Pressable onPress={() => setShowInfo(true)} hitSlop={10}>
+                  <Ionicons name="help-circle-outline" size={28} color="#000" />
+                </Pressable>
                 <Pressable
                   onPress={() => navigation.navigate("ArchivedHabits")}
                   hitSlop={10}
                 >
                   <Ionicons name="archive-outline" size={24} color="#000" />
-                </Pressable>
-                <Pressable onPress={() => setShowInfo(true)} hitSlop={10}>
-                  <Ionicons
-                    name="help-circle-outline"
-                    size={24}
-                    color="#000"
-                  />
                 </Pressable>
               </View>
             </View>
@@ -324,7 +320,7 @@ const styles = StyleSheet.create({
   iconRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 16,
+    gap: 12,
   },
   objectivesTitle: {
     fontSize: 24,

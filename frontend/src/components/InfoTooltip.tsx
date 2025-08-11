@@ -11,26 +11,28 @@ export default function InfoTooltip({ onClose }: InfoTooltipProps) {
     <Pressable style={styles.overlay} onPress={onClose}>
       <Pressable style={styles.box} onPress={() => {}}>
         <Text style={styles.title}>How the app works</Text>
+
         <Text style={styles.text}>
-          1) create some habits that you'd like to do every day, e.g., take
-          supplements, or walk 10k steps, or stretch
+          1) Create daily habits you want to track - for example: take
+          supplements, walk 10k steps, or stretch.
         </Text>
+
         <Text style={styles.text}>
-          2) set a reminder on the notifications time to get a daily reminder to
-          log habits, or edit a specific habit to get a custom reminder for that
-          habit
+          2) Set reminders to help you stay consistent. You can choose a daily
+          notification time or add custom reminders for individual habits.
         </Text>
+
         <Text style={styles.text}>
-          3) when a habit is complete, tap it to mark it as done. This will
-          provide a satisfying check mark for a nice dopamine release
+          3) When you complete a habit, tap it to mark it as done. Enjoy the
+          satisfying check mark - and a little hit of dopamine.
         </Text>
+
         <Text style={styles.text}>
-          4) over time, progress will be stored and visualised into different
-          formats to see the progress you've made. The calendar screen will show
-          if you've completed all, some, or none of your habits on each day in a
-          month. The grid screen will show a more detailed break down, showing
-          the track record of each habit throughout the month.
+          4) Watch your progress build over time. The calendar view shows
+          whether you’ve completed all, some, or none of your habits each day.
+          The grid view breaks it down habit-by-habit across the month.
         </Text>
+
         <PrimaryButton title="Got it" onPress={onClose} />
       </Pressable>
     </Pressable>
@@ -67,4 +69,3 @@ const styles = StyleSheet.create({
     color: "#333",
   },
 });
-
