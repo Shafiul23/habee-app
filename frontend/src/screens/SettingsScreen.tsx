@@ -31,7 +31,7 @@ export default function SettingsScreen() {
     } catch (err: any) {
       Toast.show({
         type: "error",
-        text1: "Error loading habits",
+        text1: "Error logging out",
         text2: err.message || "Something went wrong while logging out.",
       });
     }
@@ -87,7 +87,6 @@ export default function SettingsScreen() {
     >
       <View>
         <Text style={styles.title}>Settings</Text>
-
         <PrimaryButton
           title="Notifications"
           onPress={() => {
@@ -101,19 +100,31 @@ export default function SettingsScreen() {
             style={styles.aboutButton}
             onPress={() => setShowAbout((prev) => !prev)}
           >
-            <Text style={styles.aboutButtonText}>About</Text>
             <Ionicons
               name={showAbout ? "chevron-down" : "chevron-forward"}
               size={20}
               color="#000"
+              style={styles.aboutIconLeft}
+            />
+
+            <Text style={styles.aboutButtonText}>About</Text>
+
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color="transparent"
+              style={styles.aboutIconRight}
             />
           </Pressable>
+
           {showAbout && (
-            <Text style={styles.aboutText}>
-              Habee is built by a solo developer who believes in an ad-free
-              experience. Support the app if you wish—your help keeps it
-              running.
-            </Text>
+            <View style={styles.aboutCard}>
+              <Text style={styles.aboutBody}>
+                {`Habee is built by a solo developer to replace clunky spreadsheet tracking with a clean, intuitive habit-tracking experience. Other apps often feel cluttered, overly complex, hidden behind paywalls, or filled with ads.
+
+Habee focuses on simplicity, visual progress, and an ad-free experience. Supporting Habee helps cover ongoing running costs — from hosting and databases to keeping the app free of ads and unnecessary barriers.`}
+              </Text>
+            </View>
           )}
         </View>
         <PrimaryButton
@@ -128,7 +139,7 @@ export default function SettingsScreen() {
 
       <View>
         <Text style={styles.versionText}>
-          Version {Constants.manifest?.version || "1.0.0"}
+          Version {Constants.expoConfig?.version || "1.0.0"}
         </Text>
       </View>
     </ScrollView>
@@ -155,23 +166,41 @@ const styles = StyleSheet.create({
   aboutButton: {
     backgroundColor: "#f7ce46",
     paddingVertical: 14,
-    paddingHorizontal: 28,
+    paddingHorizontal: 16,
     borderRadius: 12,
     marginVertical: 6,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
+  aboutIconLeft: {
+    width: 24,
+    textAlign: "left",
+  },
+  aboutIconRight: {
+    width: 24,
+    textAlign: "right",
+  },
   aboutButtonText: {
     color: "#000",
     fontWeight: "700",
     fontSize: 16,
+    textAlign: "center",
+    flexShrink: 1,
   },
-  aboutText: {
-    fontSize: 14,
-    color: "#000",
+  aboutCard: {
     marginTop: 8,
-    marginHorizontal: 4,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    backgroundColor: "#f6f7f8",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#e9ecef",
+  },
+  aboutBody: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: "#333",
   },
   deleteButton: {
     backgroundColor: "#fff",
@@ -180,8 +209,6 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   versionText: {
-    // display: "flex",
-    // justifyContent: "flex-end",
     textAlign: "center",
     fontSize: 14,
     color: "#999",
