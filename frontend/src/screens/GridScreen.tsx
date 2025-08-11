@@ -15,6 +15,14 @@ import { getLayoutConstants } from "../constants/layout";
 import { usePaginatedHabits } from "../hooks/usePaginatedHabits";
 import LoadingSpinner from "../components/LoadingSpinner";
 import Toast from "react-native-toast-message";
+import Legend from "../components/Legend";
+
+const gridLegendData = [
+  { label: "Complete", color: "#52c41a" },
+  { label: "Missed", color: "#ff4d4f" },
+  { label: "Paused", color: "#909090" },
+  { label: "Inactive", color: "#e5e5e5" },
+];
 
 export default function GridScreen() {
   const [selectedMonth, setSelectedMonth] = useState(new Date());
@@ -152,13 +160,16 @@ export default function GridScreen() {
             }
           >
             {habits.length > 0 ? (
-              <WeeklyGrid
-                habits={habits}
-                month={selectedMonth}
-                currentPage={currentPage}
-                cellSize={cellSize}
-                dayLabelWidth={dayLabelWidth}
-              />
+              <>
+                <WeeklyGrid
+                  habits={habits}
+                  month={selectedMonth}
+                  currentPage={currentPage}
+                  cellSize={cellSize}
+                  dayLabelWidth={dayLabelWidth}
+                />
+                <Legend data={gridLegendData} />
+              </>
             ) : (
               <Text style={styles.emptyText}>
                 No habits to display. Add habits to view your monthly progress.
@@ -190,6 +201,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     justifyContent: "center",
+    paddingBottom: 120,
   },
   emptyText: {
     fontSize: 16,
