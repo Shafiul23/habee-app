@@ -29,9 +29,9 @@ def create_habit():
 
     if not name:
         return jsonify({"error": "Habit name is required"}), 400
-    
+
     name = name.strip()
-    
+
     if len(name) > 64:
         return jsonify({"error": "Habit name cannot exceed 64 characters"}), 400
 
@@ -80,6 +80,7 @@ def create_habit():
             "start_date": habit.start_date.isoformat()
         }
     })
+
 
 @habits_bp.route("/<int:habit_id>", methods=["PUT"])
 @jwt_required()
@@ -248,10 +249,9 @@ def list_habits():
     ])
 
 
-
 @habits_bp.route("/<int:habit_id>/log", methods=["POST"])
 @jwt_required()
-@limiter.limit("10/minute", key_func=lambda: get_jwt_identity())
+@limiter.limit("10/minute")
 def log_habit(habit_id):
     user_id = get_jwt_identity()
     habit = Habit.query.filter_by(id=habit_id, user_id=user_id).first()
@@ -284,7 +284,7 @@ def log_habit(habit_id):
 
 @habits_bp.route("/<int:habit_id>/unlog", methods=["POST"])
 @jwt_required()
-@limiter.limit("10/minute", key_func=lambda: get_jwt_identity())
+@limiter.limit("10/minute")
 def unlog_habit(habit_id):
     user_id = get_jwt_identity()
 
@@ -344,7 +344,6 @@ def log_summary():
         result[day].append(log.habit_id)
 
     return jsonify(result)
-
 
 
 @habits_bp.route("/daily-summary", methods=["GET"])
@@ -445,7 +444,7 @@ def calendar_summary():
 
     for day in month_days:
         if day > today:
-            summary[day.isoformat()] = { "status": "future" }
+            summary[day.isoformat()] = {"status": "future"}
             continue
 
         # Get habits active on that day
@@ -463,7 +462,7 @@ def calendar_summary():
         total = len(active_habits)
 
         if total == 0:
-            summary[day.isoformat()] = { "status": "inactive" }
+            summary[day.isoformat()] = {"status": "inactive"}
             continue
 
         completed = logs_by_date.get(day, [])
@@ -483,5 +482,3 @@ def calendar_summary():
         }
 
     return jsonify(summary)
-
-

@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 from app.models.reset_token import PasswordResetToken
 from sqlalchemy.exc import OperationalError, IntegrityError
 from functools import wraps
-import hashlib
 
 # Apple JWT verification
 from jwt import PyJWKClient, InvalidTokenError
@@ -47,7 +46,7 @@ def register():
 
     if not email or not password:
         return jsonify({"error": "Email and password are required"}), 400
-    
+
     email_regex = r'^[^@\s]+@[^@\s]+\.[^@\s]+$'
     if not re.match(email_regex, email):
         return jsonify({"error": "Invalid email address"}), 400
@@ -179,15 +178,17 @@ def forgot_password():
         return jsonify({"message": "If this email exists, a reset link will be sent."}), 200
 
     token = str(uuid.uuid4())
-    token_hash = hashlib.sha256(token.encode()).hexdigest()
     expiry = datetime.utcnow() + timedelta(hours=1)
 
-    reset_entry = PasswordResetToken(user_id=user.id, token_hash=token_hash, expires_at=expiry)
+    reset_entry = PasswordResetToken(user_id=user.id, token=token, expires_at=expiry)
     db.session.add(reset_entry)
     db.session.commit()
 
     # TODO: Replace this with actual email logic
     # Deep link to open the mobile app directly for password reset
+    print(f"User email: {email}")
+    print(f"Password reset link: habee://reset-password/{token}")
+
     return jsonify({"message": "Reset link sent to email"}), 200
 
 
@@ -199,8 +200,7 @@ def reset_password(token):
     if not new_password:
         return jsonify({"error": "Password is required"}), 400
 
-    token_hash = hashlib.sha256(token.encode()).hexdigest()
-    entry = PasswordResetToken.query.filter_by(token_hash=token_hash).first()
+    entry = PasswordResetToken.query.filter_by(token=token).first()
     if not entry or entry.expires_at < datetime.utcnow():
         return jsonify({"error": "Invalid or expired token"}), 400
 
@@ -215,8 +215,7 @@ def reset_password(token):
 @auth_bp.route("/validate-reset-token/<token>", methods=["GET"])
 @retry_on_operational_error
 def validate_reset_token(token):
-    token_hash = hashlib.sha256(token.encode()).hexdigest()
-    entry = PasswordResetToken.query.filter_by(token_hash=token_hash).first()
+    entry = PasswordResetToken.query.filter_by(token=token).first()
     if not entry or entry.expires_at < datetime.utcnow():
         return jsonify({"error": "Invalid or expired token"}), 400
     return jsonify({"message": "Valid token"}), 200

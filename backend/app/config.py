@@ -5,6 +5,7 @@ from datetime import timedelta
 
 load_dotenv()
 
+
 class Config:
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -22,6 +23,3 @@ class Config:
     if not JWT_SECRET_KEY:
         raise RuntimeError("JWT_SECRET_KEY environment variable is required")
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=30)
-
-    # Rate limiting
-    RATELIMIT_STORAGE_URI = os.getenv("REDIS_URL", "memory://")
