@@ -25,7 +25,7 @@ def create_app():
     app.register_blueprint(habits_bp, url_prefix="/api/habits")
 
     # Import models so Alembic/migrate sees them
-    from app.models import user, habit, log, reset_token  # noqa: F401
+    from app.models import user, habit, log, reset_token
 
     @app.errorhandler(OperationalError)
     def handle_operational_error(e):

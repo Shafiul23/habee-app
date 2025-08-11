@@ -19,7 +19,7 @@ class Config:
     }
 
     # JWT
-    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "dev-key")
     if not JWT_SECRET_KEY:
         raise RuntimeError("JWT_SECRET_KEY environment variable is required")
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=30)
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=365)
