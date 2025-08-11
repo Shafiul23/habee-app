@@ -223,8 +223,8 @@ export default function Home() {
             ) : (
               <View style={styles.emptyWrapper}>
                 <Text style={styles.emptyText}>
-                  You haven’t added any habits yet.{"\n"}Tap the + button below
-                  to get started.
+                  You haven’t added any habits yet.{"\n"}Tap the button below to
+                  get started.
                 </Text>
               </View>
             )}

@@ -21,19 +21,5 @@ export const isValidHabit = (
     return { valid: false, error: "Habit name cannot exceed 64 characters" };
   }
 
-  const emojis = trimmed.match(emojiRegex) || [];
-
-  if (emojis.length > 2) {
-    return { valid: false, error: "You can use up to 2 emojis only" };
-  }
-
-  const nonEmojiContent = trimmed.replace(emojiRegex, "").trim();
-  if (!nonEmojiContent) {
-    return {
-      valid: false,
-      error: "Habit name must include text, not just emojis",
-    };
-  }
-
   return { valid: true };
 };
