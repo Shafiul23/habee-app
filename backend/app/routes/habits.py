@@ -1,8 +1,8 @@
 # app/routes/habits.py
-
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from app.extensions import db
+from sqlalchemy.exc import IntegrityError
+from app.extensions import db, limiter
 from app.models.habit import Habit
 from app.models.log import HabitLog
 from app.models.habit_pause import HabitPause
@@ -11,12 +11,13 @@ from collections import defaultdict
 from calendar import monthrange
 
 
-
 habits_bp = Blueprint("habits", __name__)
+
 
 @habits_bp.route("/test", methods=["GET"])
 def test():
     return {"message": "Habits route works!"}
+
 
 @habits_bp.route("/", methods=["POST"])
 @jwt_required()
@@ -40,10 +41,14 @@ def create_habit():
     ).first()
 
     if existing:
-        paused = HabitPause.query.filter_by(habit_id=existing.id, end_date=None).first()
+        paused = HabitPause.query.filter_by(
+            habit_id=existing.id, end_date=None
+        ).first()
         if paused:
             return (
-                jsonify({"error": "duplicate_name_archived", "archivedHabitId": existing.id}),
+                jsonify(
+                    {"error": "duplicate_name_archived", "archivedHabitId": existing.id}
+                ),
                 409,
             )
         return jsonify({"error": "duplicate_name_active"}), 409
@@ -52,6 +57,16 @@ def create_habit():
         start_date = date.fromisoformat(start_date_str) if start_date_str else date.today()
     except ValueError:
         return jsonify({"error": "Invalid start_date format. Use YYYY-MM-DD"}), 400
+
+    active_count = Habit.query.filter(
+        Habit.user_id == user_id,
+        ~Habit.pauses.any(HabitPause.end_date.is_(None))
+    ).count()
+    total_count = Habit.query.filter_by(user_id=user_id).count()
+    if active_count >= 100:
+        return jsonify({"error": "active_habit_limit_reached"}), 400
+    if total_count >= 200:
+        return jsonify({"error": "total_habit_limit_reached"}), 400
 
     habit = Habit(name=name, user_id=user_id, start_date=start_date)
     db.session.add(habit)
@@ -152,6 +167,12 @@ def unarchive_habit(habit_id):
     habit = Habit.query.filter_by(id=habit_id, user_id=user_id).first()
     if not habit:
         return {"error": "Habit not found"}, 404
+    active_count = Habit.query.filter(
+        Habit.user_id == user_id,
+        ~Habit.pauses.any(HabitPause.end_date.is_(None))
+    ).count()
+    if active_count >= 100:
+        return jsonify({"error": "active_habit_limit_reached"}), 400
 
     open_pause = HabitPause.query.filter_by(habit_id=habit_id, end_date=None).first()
     if open_pause:
@@ -230,6 +251,7 @@ def list_habits():
 
 @habits_bp.route("/<int:habit_id>/log", methods=["POST"])
 @jwt_required()
+@limiter.limit("10/minute", key_func=lambda: get_jwt_identity())
 def log_habit(habit_id):
     user_id = get_jwt_identity()
     habit = Habit.query.filter_by(id=habit_id, user_id=user_id).first()
@@ -250,14 +272,19 @@ def log_habit(habit_id):
         return jsonify({"message": "Habit already logged for this date"}), 200
 
     log = HabitLog(habit_id=habit.id, date=log_date)
-    db.session.add(log)
-    db.session.commit()
+    try:
+        db.session.add(log)
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({"message": "Habit already logged for this date"}), 200
 
     return jsonify({"message": "Habit logged"})
 
 
 @habits_bp.route("/<int:habit_id>/unlog", methods=["POST"])
 @jwt_required()
+@limiter.limit("10/minute", key_func=lambda: get_jwt_identity())
 def unlog_habit(habit_id):
     user_id = get_jwt_identity()
 

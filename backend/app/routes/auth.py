@@ -1,11 +1,12 @@
 from flask import Blueprint, request, jsonify
-from app.extensions import db
+from app.extensions import db, limiter
 from app.models.user import User
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from datetime import datetime, timedelta
 from app.models.reset_token import PasswordResetToken
 from sqlalchemy.exc import OperationalError, IntegrityError
 from functools import wraps
+import hashlib
 
 # Apple JWT verification
 from jwt import PyJWKClient, InvalidTokenError
@@ -16,6 +17,7 @@ import jwt
 
 auth_bp = Blueprint("auth", __name__)
 APPLE_CLIENT_ID = os.getenv("APPLE_CLIENT_ID")
+
 
 def retry_on_operational_error(fn):
     @wraps(fn)
@@ -36,7 +38,8 @@ def retry_on_operational_error(fn):
 # -------------------- AUTH ROUTES --------------------
 
 @auth_bp.route("/register", methods=["POST"])
-@retry_on_operational_error 
+@limiter.limit("5/minute")
+@retry_on_operational_error
 def register():
     data = request.get_json(silent=True) or {}
     email = (data.get("email") or "").strip()
@@ -68,11 +71,11 @@ def register():
         db.session.rollback()
         return jsonify({"error": "User already exists"}), 400
 
-
     return jsonify({"message": "User registered successfully"}), 201
 
 
 @auth_bp.route("/login", methods=["POST"])
+@limiter.limit("5/minute")
 @retry_on_operational_error
 def login():
     data = request.get_json(silent=True) or {}
@@ -165,6 +168,7 @@ def delete_user():
 # --- Password reset flow ---
 
 @auth_bp.route("/forgot-password", methods=["POST"])
+@limiter.limit("5/minute")
 @retry_on_operational_error
 def forgot_password():
     data = request.get_json(silent=True) or {}
@@ -175,17 +179,15 @@ def forgot_password():
         return jsonify({"message": "If this email exists, a reset link will be sent."}), 200
 
     token = str(uuid.uuid4())
+    token_hash = hashlib.sha256(token.encode()).hexdigest()
     expiry = datetime.utcnow() + timedelta(hours=1)
 
-    reset_entry = PasswordResetToken(user_id=user.id, token=token, expires_at=expiry)
+    reset_entry = PasswordResetToken(user_id=user.id, token_hash=token_hash, expires_at=expiry)
     db.session.add(reset_entry)
     db.session.commit()
 
     # TODO: Replace this with actual email logic
     # Deep link to open the mobile app directly for password reset
-    print(f"User email: {email}")
-    print(f"Password reset link: habee://reset-password/{token}")
-
     return jsonify({"message": "Reset link sent to email"}), 200
 
 
@@ -197,7 +199,8 @@ def reset_password(token):
     if not new_password:
         return jsonify({"error": "Password is required"}), 400
 
-    entry = PasswordResetToken.query.filter_by(token=token).first()
+    token_hash = hashlib.sha256(token.encode()).hexdigest()
+    entry = PasswordResetToken.query.filter_by(token_hash=token_hash).first()
     if not entry or entry.expires_at < datetime.utcnow():
         return jsonify({"error": "Invalid or expired token"}), 400
 
@@ -212,7 +215,8 @@ def reset_password(token):
 @auth_bp.route("/validate-reset-token/<token>", methods=["GET"])
 @retry_on_operational_error
 def validate_reset_token(token):
-    entry = PasswordResetToken.query.filter_by(token=token).first()
+    token_hash = hashlib.sha256(token.encode()).hexdigest()
+    entry = PasswordResetToken.query.filter_by(token_hash=token_hash).first()
     if not entry or entry.expires_at < datetime.utcnow():
         return jsonify({"error": "Invalid or expired token"}), 400
     return jsonify({"message": "Valid token"}), 200

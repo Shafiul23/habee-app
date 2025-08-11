@@ -18,5 +18,10 @@ class Config:
     }
 
     # JWT
-    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "dev-key")
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=365)
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+    if not JWT_SECRET_KEY:
+        raise RuntimeError("JWT_SECRET_KEY environment variable is required")
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=30)
+
+    # Rate limiting
+    RATELIMIT_STORAGE_URI = os.getenv("REDIS_URL", "memory://")
