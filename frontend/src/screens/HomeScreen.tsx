@@ -29,6 +29,11 @@ import HeaderNav from "../components/HeaderNav";
 import LoadingSpinner from "../components/LoadingSpinner";
 import PrimaryButton from "../components/PrimaryButton";
 import SwipeableDayView from "../components/SwipeableView";
+import HabitReminderModal from "../components/HabitReminderModal";
+import {
+  cancelHabitReminder,
+  removeHabitReminder,
+} from "../../lib/habitReminders";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Main">;
 
@@ -37,6 +42,7 @@ export default function Home() {
   const [habits, setHabits] = useState<Habit[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [showHabitMenu, setShowHabitMenu] = useState<number | null>(null);
+  const [reminderHabit, setReminderHabit] = useState<Habit | null>(null);
   const [loading, setLoading] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [error, setError] = useState(false);
@@ -118,6 +124,7 @@ export default function Home() {
             setDeletingId(habitId);
             try {
               await deleteHabit(habitId);
+              await removeHabitReminder(habitId);
               setHabits((prev) => prev.filter((h) => h.id !== habitId));
               setShowHabitMenu(null);
             } catch (err: any) {
@@ -147,6 +154,7 @@ export default function Home() {
           onPress: async () => {
             try {
               await archiveHabit(habitId);
+              await cancelHabitReminder(habitId);
               setShowHabitMenu(null);
               loadHabits(true);
             } catch (err: any) {
@@ -246,7 +254,21 @@ export default function Home() {
           }}
           onDelete={() => handleDeleteHabit(showHabitMenu)}
           onArchive={() => handleArchiveHabit(showHabitMenu)}
+          habitId={showHabitMenu}
+          onReminder={() => {
+            const habit = habits.find((h) => h.id === showHabitMenu);
+            if (!habit) return;
+            setShowHabitMenu(null);
+            setReminderHabit(habit);
+          }}
           deleting={deletingId === showHabitMenu}
+        />
+      )}
+      {reminderHabit && (
+        <HabitReminderModal
+          habitId={reminderHabit.id}
+          habitName={reminderHabit.name}
+          onClose={() => setReminderHabit(null)}
         />
       )}
     </>

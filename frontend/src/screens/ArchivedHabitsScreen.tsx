@@ -12,6 +12,7 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import PrimaryButton from "../components/PrimaryButton";
 import ArchivedHabitItem from "../components/ArchivedHabitItem";
 import HabitMenu from "../components/HabitMenu";
+import { removeHabitReminder } from "../../lib/habitReminders";
 
 export default function ArchivedHabitsScreen() {
   const [habits, setHabits] = useState<ArchivedHabit[]>([]);
@@ -63,6 +64,7 @@ export default function ArchivedHabitsScreen() {
             setDeletingId(id);
             try {
               await deleteHabit(id);
+              await removeHabitReminder(id);
               setShowHabitMenu(null);
               load();
             } catch (err: any) {

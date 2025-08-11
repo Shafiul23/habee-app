@@ -1,7 +1,8 @@
 // frontend/src/components/HabitMenu.tsx
-import React from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Pressable, StyleSheet, View, Text } from "react-native";
 import PrimaryButton from "./PrimaryButton";
+import { getHabitReminderTime } from "../../lib/habitReminders";
 
 type HabitMenuProps = {
   onClose: () => void;
@@ -10,6 +11,8 @@ type HabitMenuProps = {
   onUnarchive?: () => void;
   onDelete: () => void;
   deleting: boolean;
+  habitId?: number;
+  onReminder?: () => void;
 };
 
 export default function HabitMenu({
@@ -19,14 +22,41 @@ export default function HabitMenu({
   onUnarchive,
   onDelete,
   deleting,
+  habitId,
+  onReminder,
 }: HabitMenuProps) {
+  const [subtitle, setSubtitle] = useState<string>("Off");
+
+  useEffect(() => {
+    if (habitId === undefined) return;
+    const load = async () => {
+      const time = await getHabitReminderTime(habitId);
+      if (time) {
+        const h = time.hour.toString().padStart(2, "0");
+        const m = time.minute.toString().padStart(2, "0");
+        setSubtitle(`${h}:${m}`);
+      } else {
+        setSubtitle("Off");
+      }
+    };
+    load();
+  }, [habitId]);
+
   return (
     <Pressable style={styles.overlay} onPress={onClose}>
       <Pressable style={styles.menuBox}>
         {onEdit && <PrimaryButton title="Edit Habit" onPress={onEdit} />}
-        {onArchive && <PrimaryButton title="Archive Habit" onPress={onArchive} />}
+        {onArchive && (
+          <PrimaryButton title="Archive Habit" onPress={onArchive} />
+        )}
         {onUnarchive && (
           <PrimaryButton title="Unarchive Habit" onPress={onUnarchive} />
+        )}
+        {habitId !== undefined && onReminder && (
+          <>
+            <PrimaryButton title="Custom Reminder" onPress={onReminder} />
+            <Text style={styles.reminderSubtitle}>{subtitle}</Text>
+          </>
         )}
         <PrimaryButton
           title="Delete Habit"
@@ -62,5 +92,11 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     width: 300,
     elevation: 5,
+  },
+  reminderSubtitle: {
+    color: "#555",
+    fontSize: 14,
+    textAlign: "center",
+    marginVertical: 10,
   },
 });
