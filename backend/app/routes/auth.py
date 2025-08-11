@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from app.extensions import db
+from app.extensions import db, limiter
 from app.models.user import User
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from datetime import datetime, timedelta
@@ -16,6 +16,7 @@ import jwt
 
 auth_bp = Blueprint("auth", __name__)
 APPLE_CLIENT_ID = os.getenv("APPLE_CLIENT_ID")
+
 
 def retry_on_operational_error(fn):
     @wraps(fn)
@@ -36,7 +37,8 @@ def retry_on_operational_error(fn):
 # -------------------- AUTH ROUTES --------------------
 
 @auth_bp.route("/register", methods=["POST"])
-@retry_on_operational_error 
+@limiter.limit("5/minute")
+@retry_on_operational_error
 def register():
     data = request.get_json(silent=True) or {}
     email = (data.get("email") or "").strip()
@@ -44,7 +46,7 @@ def register():
 
     if not email or not password:
         return jsonify({"error": "Email and password are required"}), 400
-    
+
     email_regex = r'^[^@\s]+@[^@\s]+\.[^@\s]+$'
     if not re.match(email_regex, email):
         return jsonify({"error": "Invalid email address"}), 400
@@ -68,11 +70,11 @@ def register():
         db.session.rollback()
         return jsonify({"error": "User already exists"}), 400
 
-
     return jsonify({"message": "User registered successfully"}), 201
 
 
 @auth_bp.route("/login", methods=["POST"])
+@limiter.limit("5/minute")
 @retry_on_operational_error
 def login():
     data = request.get_json(silent=True) or {}
@@ -165,6 +167,7 @@ def delete_user():
 # --- Password reset flow ---
 
 @auth_bp.route("/forgot-password", methods=["POST"])
+@limiter.limit("5/minute")
 @retry_on_operational_error
 def forgot_password():
     data = request.get_json(silent=True) or {}
