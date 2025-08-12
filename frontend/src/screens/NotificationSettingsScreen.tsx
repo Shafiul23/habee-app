@@ -2,7 +2,13 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as Notifications from "expo-notifications";
-import React, { useEffect, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import React, {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   Alert,
   Linking,
@@ -17,6 +23,14 @@ import {
   cancelAllReminders,
   scheduleDailyReminder,
 } from "../../lib/notifications";
+import {
+  cancelHabitReminder,
+  getHabitReminderTime,
+  removeHabitReminder,
+  saveHabitReminder,
+  ReminderTime,
+} from "../../lib/habitReminders";
+import { getHabits } from "../../lib/api";
 import PrimaryButton from "../components/PrimaryButton";
 
 export default function NotificationSettingsScreen() {
@@ -24,6 +38,14 @@ export default function NotificationSettingsScreen() {
   const [selectedTime, setSelectedTime] = useState(new Date());
   const [pendingTime, setPendingTime] = useState<Date | null>(null);
   const [editing, setEditing] = useState(false);
+  type CustomReminder = {
+    habitId: number;
+    habitName: string;
+    time: ReminderTime;
+    enabled: boolean;
+  };
+  const [customReminders, setCustomReminders] = useState<CustomReminder[]>([]);
+  const disabledReminders = useRef<Set<number>>(new Set());
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -74,6 +96,75 @@ export default function NotificationSettingsScreen() {
     };
     checkPermissions();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      const loadCustomReminders = async () => {
+        const keys = await AsyncStorage.getAllKeys();
+        const reminderKeys = keys.filter((k) =>
+          k.startsWith("habitReminderTime:")
+        );
+        if (reminderKeys.length === 0) {
+          setCustomReminders([]);
+          return;
+        }
+        const habits = await getHabits();
+        const habitMap = new Map(habits.map((h) => [h.id, h.name]));
+        const items: CustomReminder[] = [];
+        for (const key of reminderKeys) {
+          const id = parseInt(key.split(":")[1], 10);
+          const time = await getHabitReminderTime(id);
+          const name = habitMap.get(id);
+          if (time && name) {
+            items.push({
+              habitId: id,
+              habitName: name,
+              time,
+              enabled: true,
+            });
+          }
+        }
+        setCustomReminders(items);
+      };
+      loadCustomReminders();
+
+      return () => {
+        const ids = Array.from(disabledReminders.current);
+        disabledReminders.current.clear();
+        ids.forEach((id) => {
+          removeHabitReminder(id);
+        });
+      };
+    }, [])
+  );
+
+  const formatReminderTime = (time: ReminderTime) => {
+    const date = new Date();
+    date.setHours(time.hour, time.minute, 0, 0);
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  };
+
+  const handleToggleCustomReminder = async (
+    reminder: CustomReminder,
+    val: boolean
+  ) => {
+    setCustomReminders((prev) =>
+      prev.map((r) =>
+        r.habitId === reminder.habitId ? { ...r, enabled: val } : r
+      )
+    );
+    if (val) {
+      await saveHabitReminder(
+        reminder.habitId,
+        reminder.habitName,
+        reminder.time
+      );
+      disabledReminders.current.delete(reminder.habitId);
+    } else {
+      await cancelHabitReminder(reminder.habitId);
+      disabledReminders.current.add(reminder.habitId);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -147,6 +238,26 @@ export default function NotificationSettingsScreen() {
           )}
         </>
       )}
+
+      {customReminders.length > 0 && (
+        <>
+          <Text style={styles.sectionTitle}>Daily Habits</Text>
+          {customReminders.map((r) => (
+            <View key={r.habitId} style={styles.reminderRow}>
+              <View>
+                <Text style={styles.habitName}>{r.habitName}</Text>
+                <Text style={styles.reminderTime}>
+                  {formatReminderTime(r.time)}
+                </Text>
+              </View>
+              <Switch
+                value={r.enabled}
+                onValueChange={(val) => handleToggleCustomReminder(r, val)}
+              />
+            </View>
+          ))}
+        </>
+      )}
     </View>
   );
 }
@@ -179,5 +290,27 @@ const styles = StyleSheet.create({
   timeText: {
     fontWeight: "600",
     color: "#000",
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#000",
+    marginTop: 30,
+    marginBottom: 10,
+  },
+  reminderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 15,
+  },
+  habitName: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#000",
+  },
+  reminderTime: {
+    fontSize: 14,
+    color: "#333",
   },
 });
