@@ -28,6 +28,9 @@ export default function CreateHabitScreen() {
   const weekLabels = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
   const previewDates = () => {
+    // Avoid an infinite loop when no days are selected for weekly habits
+    if (frequency === "WEEKLY" && days.length === 0) return [];
+
     const habit: Habit = {
       id: 0,
       name,
@@ -35,13 +38,18 @@ export default function CreateHabitScreen() {
       frequency,
       days_of_week: days,
     };
+
     const res: string[] = [];
     let d = new Date();
-    while (res.length < 3) {
+
+    // limit the search window as a safeguard
+    let iterations = 0;
+    while (res.length < 3 && iterations < 365) {
       if (isApplicable(habit, d)) {
         res.push(format(d, "EEE MMM d"));
       }
       d = addDays(d, 1);
+      iterations++;
     }
     return res;
   };
