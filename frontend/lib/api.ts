@@ -28,6 +28,9 @@ export type Habit = {
   id: number;
   name: string;
   start_date: string;
+  frequency: "DAILY" | "WEEKLY";
+  days_of_week?: number[];
+  status?: "complete" | "missed" | "unlogged";
   completed?: boolean;
   pauses?: HabitPause[];
 };
@@ -97,8 +100,13 @@ export const unarchiveHabit = async (habitId: number) => {
   await api.post(`/habits/${habitId}/unarchive`);
 };
 
-export const editHabit = async (id: number, name: string) => {
-  return await api.put(`/habits/${id}`, { name });
+export const editHabit = async (
+  id: number,
+  name: string,
+  frequency?: "DAILY" | "WEEKLY",
+  days_of_week?: number[]
+) => {
+  return await api.put(`/habits/${id}`, { name, frequency, days_of_week });
 };
 
 export const deleteHabit = async (id: number) => {

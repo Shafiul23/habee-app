@@ -11,6 +11,21 @@ from collections import defaultdict
 from calendar import monthrange
 
 
+def is_applicable(habit: Habit, check_date: date) -> bool:
+    """Return True if the habit should be shown on the given date."""
+    if habit.start_date > check_date:
+        return False
+    for p in habit.pauses:
+        if p.start_date <= check_date and (p.end_date is None or p.end_date >= check_date):
+            return False
+    if habit.frequency == 'DAILY':
+        return True
+    if habit.frequency == 'WEEKLY':
+        weekday = (check_date.weekday() + 1) % 7  # 0=Sun..6=Sat
+        return habit.days_of_week and weekday in habit.days_of_week
+    return True
+
+
 habits_bp = Blueprint("habits", __name__)
 
 
@@ -26,6 +41,8 @@ def create_habit():
     data = request.get_json()
     name = data.get("name")
     start_date_str = data.get("start_date")
+    frequency = data.get("frequency", "DAILY")
+    days = data.get("days_of_week")
 
     if not name:
         return jsonify({"error": "Habit name is required"}), 400
@@ -58,6 +75,20 @@ def create_habit():
     except ValueError:
         return jsonify({"error": "Invalid start_date format. Use YYYY-MM-DD"}), 400
 
+    if frequency not in ["DAILY", "WEEKLY"]:
+        return jsonify({"error": "Invalid frequency"}), 400
+    if frequency == "WEEKLY":
+        if not isinstance(days, list) or len(days) == 0:
+            return jsonify({"error": "days_of_week must be a non-empty list"}), 400
+        try:
+            days = [int(d) for d in days]
+        except Exception:
+            return jsonify({"error": "days_of_week must be integers"}), 400
+        if any(d < 0 or d > 6 for d in days):
+            return jsonify({"error": "days_of_week must be between 0 and 6"}), 400
+    else:
+        days = None
+
     active_count = Habit.query.filter(
         Habit.user_id == user_id,
         ~Habit.pauses.any(HabitPause.end_date.is_(None))
@@ -68,7 +99,13 @@ def create_habit():
     if total_count >= 200:
         return jsonify({"error": "total_habit_limit_reached"}), 400
 
-    habit = Habit(name=name, user_id=user_id, start_date=start_date)
+    habit = Habit(
+        name=name,
+        user_id=user_id,
+        start_date=start_date,
+        frequency=frequency,
+        days_of_week=days,
+    )
     db.session.add(habit)
     db.session.commit()
 
@@ -77,7 +114,9 @@ def create_habit():
         "habit": {
             "id": habit.id,
             "name": habit.name,
-            "start_date": habit.start_date.isoformat()
+            "start_date": habit.start_date.isoformat(),
+            "frequency": habit.frequency,
+            "days_of_week": habit.days_of_week,
         }
     })
 
@@ -116,7 +155,25 @@ def update_habit(habit_id):
             )
         return jsonify({"error": "duplicate_name_active"}), 409
 
+    frequency = data.get("frequency", habit.frequency)
+    days = data.get("days_of_week", habit.days_of_week)
+    if frequency not in ["DAILY", "WEEKLY"]:
+        return jsonify({"error": "Invalid frequency"}), 400
+    if frequency == "WEEKLY":
+        if not isinstance(days, list) or len(days) == 0:
+            return jsonify({"error": "days_of_week must be a non-empty list"}), 400
+        try:
+            days = [int(d) for d in days]
+        except Exception:
+            return jsonify({"error": "days_of_week must be integers"}), 400
+        if any(d < 0 or d > 6 for d in days):
+            return jsonify({"error": "days_of_week must be between 0 and 6"}), 400
+    else:
+        days = None
+
     habit.name = new_name
+    habit.frequency = frequency
+    habit.days_of_week = days
     db.session.commit()
 
     return jsonify({
@@ -124,7 +181,9 @@ def update_habit(habit_id):
         "habit": {
             "id": habit.id,
             "name": habit.name,
-            "start_date": habit.start_date.isoformat()
+            "start_date": habit.start_date.isoformat(),
+            "frequency": habit.frequency,
+            "days_of_week": habit.days_of_week,
         }
     })
 
@@ -202,6 +261,8 @@ def archived_habits():
                 "id": h.id,
                 "name": h.name,
                 "start_date": h.start_date.isoformat(),
+                "frequency": h.frequency,
+                "days_of_week": h.days_of_week,
                 "pause_start_date": pause.start_date.isoformat() if pause else None,
             }
         )
@@ -221,22 +282,15 @@ def list_habits():
             selected_date = date.fromisoformat(date_str)
         except ValueError:
             return {"error": "Invalid date format. Use YYYY-MM-DD"}, 400
-
-        def active(h):
-            for p in h.pauses:
-                if p.start_date <= selected_date and (
-                    p.end_date is None or p.end_date >= selected_date
-                ):
-                    return False
-            return h.start_date <= selected_date
-
-        habits = [h for h in habits if active(h)]
+        habits = [h for h in habits if is_applicable(h, selected_date)]
 
     return jsonify([
         {
             "id": h.id,
             "name": h.name,
             "start_date": h.start_date.isoformat(),
+            "frequency": h.frequency,
+            "days_of_week": h.days_of_week,
             "pauses": [
                 {
                     "start_date": p.start_date.isoformat(),
@@ -265,6 +319,9 @@ def log_habit(habit_id):
         log_date = date.fromisoformat(date_str) if date_str else date.today()
     except ValueError:
         return jsonify({"error": "Invalid date format. Use YYYY-MM-DD"}), 400
+
+    if not is_applicable(habit, log_date):
+        return jsonify({"error": "Habit not scheduled for this date"}), 400
 
     existing_log = HabitLog.query.filter_by(habit_id=habit_id, date=log_date).first()
 
@@ -298,6 +355,9 @@ def unlog_habit(habit_id):
         log_date = date.fromisoformat(date_str) if date_str else date.today()
     except ValueError:
         return jsonify({"error": "Invalid date format. Use YYYY-MM-DD"}), 400
+
+    if not is_applicable(habit, log_date):
+        return jsonify({"error": "Habit not scheduled for this date"}), 400
 
     log = HabitLog.query.filter_by(habit_id=habit.id, date=log_date).first()
 
@@ -360,23 +420,10 @@ def daily_summary():
     except ValueError:
         return {"error": "Invalid date format. Use YYYY-MM-DD"}, 400
 
-    # Get all user's habits and filter by active status on this date
-    habits = Habit.query.filter(
-        Habit.user_id == user_id,
-        Habit.start_date <= selected_date
-    ).all()
+    habits = Habit.query.filter(Habit.user_id == user_id).all()
+    applicable = [h for h in habits if is_applicable(h, selected_date)]
 
-    def is_active(h):
-        for p in h.pauses:
-            if p.start_date <= selected_date and (
-                p.end_date is None or p.end_date >= selected_date
-            ):
-                return False
-        return True
-
-    active_habits = [h for h in habits if is_active(h)]
-
-    habit_ids = [h.id for h in active_habits]
+    habit_ids = [h.id for h in applicable]
 
     # Get logs for this date
     logs = HabitLog.query.filter(
@@ -388,12 +435,20 @@ def daily_summary():
 
     # Return habit list with completed status
     summary = []
-    for habit in active_habits:
+    today = date.today()
+    for habit in applicable:
+        if habit.id in logged_ids:
+            status = "complete"
+        else:
+            status = "missed" if selected_date < today else "unlogged"
         summary.append({
             "id": habit.id,
             "name": habit.name,
             "start_date": habit.start_date.isoformat(),
-            "completed": habit.id in logged_ids
+            "frequency": habit.frequency,
+            "days_of_week": habit.days_of_week,
+            "status": status,
+            "completed": habit.id in logged_ids,
         })
 
     return jsonify(summary)
