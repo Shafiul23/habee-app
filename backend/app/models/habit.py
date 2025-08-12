@@ -14,7 +14,7 @@ class Habit(db.Model):
         nullable=False,
         default='DAILY'
     )
-    days_of_week = db.Column(db.ARRAY(db.Integer), nullable=True)
+    days_of_week = db.Column(db.ARRAY(db.Integer), nullable=True)  # 0=Mon..6=Sun
 
     logs = db.relationship('HabitLog', backref='habit', lazy=True, cascade='all, delete-orphan')
     pauses = db.relationship('HabitPause', backref='habit', lazy=True, cascade='all, delete-orphan')

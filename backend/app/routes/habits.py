@@ -21,7 +21,7 @@ def is_applicable(habit: Habit, check_date: date) -> bool:
     if habit.frequency == 'DAILY':
         return True
     if habit.frequency == 'WEEKLY':
-        weekday = (check_date.weekday() + 1) % 7  # 0=Sun..6=Sat
+        weekday = check_date.weekday()  # 0=Mon..6=Sun
         return habit.days_of_week and weekday in habit.days_of_week
     return True
 

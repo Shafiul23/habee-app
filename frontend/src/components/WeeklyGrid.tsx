@@ -1,5 +1,12 @@
 // components/WeeklyGrid.tsx
-import { eachDayOfInterval, endOfMonth, format, isBefore, startOfMonth } from "date-fns";
+import {
+  eachDayOfInterval,
+  endOfMonth,
+  format,
+  isBefore,
+  startOfMonth,
+  parseISO,
+} from "date-fns";
 import React, { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { getHabitLogSummary, Habit } from "../../lib/api";
@@ -84,6 +91,11 @@ export default function WeeklyGrid({
                     {habitsToDisplay.map((habit) => {
                       const completed = completedLogs[iso]?.has(habit.id);
                       const applicable = isApplicable(habit, day);
+                      const paused = habit.pauses?.some((p) => {
+                        const s = parseISO(p.start_date);
+                        const e = p.end_date ? parseISO(p.end_date) : null;
+                        return day >= s && (!e || day <= e);
+                      });
                       let status: "complete" | "missed" | "unlogged" | undefined;
                       if (applicable) {
                         if (completed) status = "complete";
@@ -94,6 +106,7 @@ export default function WeeklyGrid({
                           key={`${habit.id}-${iso}`}
                           applicable={applicable}
                           status={status}
+                          paused={paused}
                           size={cellSize}
                         />
                       );

@@ -11,11 +11,10 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { editHabit, unarchiveHabit, Habit } from "../../lib/api";
+import { editHabit, unarchiveHabit } from "../../lib/api";
 import PrimaryButton from "../components/PrimaryButton";
 import { isValidHabit } from "../utils/validation";
-import { addDays, format } from "date-fns";
-import { isApplicable } from "../utils/isApplicable";
+import { format } from "date-fns";
 
 export default function EditHabitScreen() {
   const route = useRoute<any>();
@@ -29,26 +28,7 @@ export default function EditHabitScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const weekLabels = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-
-  const previewDates = () => {
-    const habit: Habit = {
-      id: habitId,
-      name,
-      start_date: format(new Date(), "yyyy-MM-dd"),
-      frequency,
-      days_of_week: days,
-    };
-    const res: string[] = [];
-    let d = new Date();
-    while (res.length < 3) {
-      if (isApplicable(habit, d)) {
-        res.push(format(d, "EEE MMM d"));
-      }
-      d = addDays(d, 1);
-    }
-    return res;
-  };
+  const weekLabels = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 
   const handleUpdate = async () => {
     const { valid, error: validationError } = isValidHabit(name);
@@ -171,17 +151,6 @@ export default function EditHabitScreen() {
           </View>
         )}
 
-        {frequency === "WEEKLY" && (
-          <View style={styles.previewBox}>
-            <Text style={styles.subLabel}>Next 3 occurrences</Text>
-            {previewDates().map((d) => (
-              <Text key={d} style={styles.previewText}>
-                {d}
-              </Text>
-            ))}
-          </View>
-        )}
-
         <PrimaryButton
           title="Update"
           onPress={handleUpdate}
@@ -264,12 +233,5 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 16,
-  },
-  previewBox: {
-    marginBottom: 16,
-  },
-  previewText: {
-    fontSize: 14,
-    color: "#000",
   },
 });

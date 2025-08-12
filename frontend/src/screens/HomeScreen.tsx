@@ -21,7 +21,9 @@ import {
   logHabit,
   undoHabit,
   archiveHabit,
+  getHabits,
 } from "../../lib/api";
+import { isApplicable } from "../utils/isApplicable";
 import { RootStackParamList } from "../../types";
 import HabitItem from "../components/HabitItem";
 import HabitMenu from "../components/HabitMenu";
@@ -30,6 +32,7 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import PrimaryButton from "../components/PrimaryButton";
 import SwipeableDayView from "../components/SwipeableView";
 import HabitReminderModal from "../components/HabitReminderModal";
+import UpcomingHabitItem from "../components/UpcomingHabitItem";
 import {
   cancelHabitReminder,
   removeHabitReminder,
@@ -49,6 +52,8 @@ export default function Home() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [error, setError] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
+  const [upcomingHabits, setUpcomingHabits] = useState<Habit[]>([]);
+  const [showUpcoming, setShowUpcoming] = useState(false);
 
   const navigation = useNavigation<NavigationProp>();
 
@@ -70,8 +75,20 @@ export default function Home() {
   const loadHabits = async (isInitial = false, givenDate = date) => {
     if (isInitial) setLoading(true);
     try {
-      const summary = await getHabitSummary(format(givenDate, "yyyy-MM-dd"));
+      const [summary, all] = await Promise.all([
+        getHabitSummary(format(givenDate, "yyyy-MM-dd")),
+        getHabits(),
+      ]);
       setHabits(summary);
+      const upcoming = all.filter((h) => {
+        if (summary.some((s) => s.id === h.id)) return false;
+        for (let i = 1; i <= 6; i++) {
+          const d = addDays(givenDate, i);
+          if (isApplicable(h, d)) return true;
+        }
+        return false;
+      });
+      setUpcomingHabits(upcoming);
       setError(false);
     } catch (err: any) {
       setError(true);
@@ -235,14 +252,39 @@ export default function Home() {
                 />
               </View>
             ) : habits.length > 0 ? (
-              habits.map((item) => (
-                <HabitItem
-                  key={item.id}
-                  item={item}
-                  onToggle={() => handleToggleHabit(item.id, item.completed)}
-                  onShowMenu={() => setShowHabitMenu(item.id)}
-                />
-              ))
+              <>
+                {habits.map((item) => (
+                  <HabitItem
+                    key={item.id}
+                    item={item}
+                    onToggle={() => handleToggleHabit(item.id, item.completed)}
+                    onShowMenu={() => setShowHabitMenu(item.id)}
+                  />
+                ))}
+                {upcomingHabits.length > 0 && (
+                  <View style={styles.upcomingSection}>
+                    <Pressable
+                      style={styles.upcomingHeader}
+                      onPress={() => setShowUpcoming((p) => !p)}
+                    >
+                      <Text style={styles.upcomingTitle}>Upcoming</Text>
+                      <Ionicons
+                        name={showUpcoming ? "chevron-down" : "chevron-forward"}
+                        size={20}
+                        color="#000"
+                      />
+                    </Pressable>
+                    {showUpcoming &&
+                      upcomingHabits.map((h) => (
+                        <UpcomingHabitItem
+                          key={h.id}
+                          item={h}
+                          onShowMenu={() => setShowHabitMenu(h.id)}
+                        />
+                      ))}
+                  </View>
+                )}
+              </>
             ) : (
               <View style={styles.emptyWrapper}>
                 <Text style={styles.emptyText}>
@@ -266,7 +308,9 @@ export default function Home() {
         <HabitMenu
           onClose={() => setShowHabitMenu(null)}
           onEdit={() => {
-            const habit = habits.find((h) => h.id === showHabitMenu);
+            const habit = [...habits, ...upcomingHabits].find(
+              (h) => h.id === showHabitMenu
+            );
             if (!habit) return;
 
             setShowHabitMenu(null);
@@ -281,7 +325,9 @@ export default function Home() {
           onArchive={() => handleArchiveHabit(showHabitMenu)}
           habitId={showHabitMenu}
           onReminder={() => {
-            const habit = habits.find((h) => h.id === showHabitMenu);
+            const habit = [...habits, ...upcomingHabits].find(
+              (h) => h.id === showHabitMenu
+            );
             if (!habit) return;
             setShowHabitMenu(null);
             setReminderHabit(habit);
@@ -374,5 +420,19 @@ const styles = StyleSheet.create({
     color: "#777",
     lineHeight: 24,
     paddingHorizontal: 20,
+  },
+  upcomingSection: {
+    marginTop: 24,
+  },
+  upcomingHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  upcomingTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#000",
   },
 });

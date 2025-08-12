@@ -65,7 +65,7 @@ async function scheduleNotifications(
   if (frequency === "WEEKLY" && days_of_week && days_of_week.length) {
     for (const d of days_of_week) {
       const trigger: Notifications.CalendarTriggerInput = {
-        weekday: d + 1,
+        weekday: ((d + 1) % 7) + 1,
         hour: time.hour,
         minute: time.minute,
         repeats: true,

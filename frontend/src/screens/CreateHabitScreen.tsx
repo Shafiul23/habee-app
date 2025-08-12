@@ -11,9 +11,8 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { addDays, format } from "date-fns";
-import { createHabit, unarchiveHabit, Habit } from "../../lib/api";
-import { isApplicable } from "../utils/isApplicable";
+import { format } from "date-fns";
+import { createHabit, unarchiveHabit } from "../../lib/api";
 import PrimaryButton from "../components/PrimaryButton";
 import { isValidHabit } from "../utils/validation";
 
@@ -25,34 +24,7 @@ export default function CreateHabitScreen() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const weekLabels = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-
-  const previewDates = () => {
-    // Avoid an infinite loop when no days are selected for weekly habits
-    if (frequency === "WEEKLY" && days.length === 0) return [];
-
-    const habit: Habit = {
-      id: 0,
-      name,
-      start_date: format(new Date(), "yyyy-MM-dd"),
-      frequency,
-      days_of_week: days,
-    };
-
-    const res: string[] = [];
-    let d = new Date();
-
-    // limit the search window as a safeguard
-    let iterations = 0;
-    while (res.length < 3 && iterations < 365) {
-      if (isApplicable(habit, d)) {
-        res.push(format(d, "EEE MMM d"));
-      }
-      d = addDays(d, 1);
-      iterations++;
-    }
-    return res;
-  };
+  const weekLabels = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 
   const handleCreateHabit = async () => {
     const { valid, error: validationError } = isValidHabit(name);
@@ -185,17 +157,6 @@ export default function CreateHabitScreen() {
           </View>
         )}
 
-        {frequency === "WEEKLY" && (
-          <View style={styles.previewBox}>
-            <Text style={styles.subLabel}>Next 3 occurrences</Text>
-            {previewDates().map((d) => (
-              <Text key={d} style={styles.previewText}>
-                {d}
-              </Text>
-            ))}
-          </View>
-        )}
-
         <PrimaryButton
           title="Create habit"
           onPress={handleCreateHabit}
@@ -282,12 +243,5 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 16,
-  },
-  previewBox: {
-    marginBottom: 16,
-  },
-  previewText: {
-    fontSize: 14,
-    color: "#000",
   },
 });
