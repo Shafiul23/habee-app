@@ -4,7 +4,12 @@ export type RootStackParamList = {
   Login: undefined;
   Register: undefined;
   CreateHabit: undefined;
-  EditHabit: { habitId: number; currentName: string };
+  EditHabit: {
+    habitId: number;
+    currentName: string;
+    frequency: "DAILY" | "WEEKLY";
+    daysOfWeek?: number[];
+  };
   ForgotPassword: undefined;
   ResetPassword: { token: string };
   NotificationSettings: undefined;

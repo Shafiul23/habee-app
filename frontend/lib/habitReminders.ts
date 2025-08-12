@@ -32,10 +32,12 @@ export async function getHabitReminderTime(
   return stored ? (JSON.parse(stored) as ReminderTime) : null;
 }
 
-async function scheduleNotification(
+async function scheduleNotifications(
   habitId: number,
   habitName: string,
-  time: ReminderTime
+  time: ReminderTime,
+  frequency: "DAILY" | "WEEKLY" = "DAILY",
+  days_of_week?: number[]
 ): Promise<boolean> {
   let { status } = await Notifications.getPermissionsAsync();
   if (status !== "granted") {
@@ -49,46 +51,76 @@ async function scheduleNotification(
   const existing = await AsyncStorage.getItem(getNotificationKey(habitId));
   if (existing) {
     try {
-      await Notifications.cancelScheduledNotificationAsync(existing);
+      const ids: string[] = JSON.parse(existing);
+      for (const id of ids) {
+        await Notifications.cancelScheduledNotificationAsync(id);
+      }
     } catch {
       // ignore
     }
   }
 
-  const trigger: Notifications.CalendarTriggerInput = {
-    hour: time.hour,
-    minute: time.minute,
-    repeats: true,
-    type: SchedulableTriggerInputTypes.CALENDAR,
-  };
+  const ids: string[] = [];
 
-  const id = await Notifications.scheduleNotificationAsync({
-    content: {
-      title: habitName,
-      body: "Time for your habit",
-    },
-    trigger,
-  });
+  if (frequency === "WEEKLY" && days_of_week && days_of_week.length) {
+    for (const d of days_of_week) {
+      const trigger: Notifications.CalendarTriggerInput = {
+        weekday: d + 1,
+        hour: time.hour,
+        minute: time.minute,
+        repeats: true,
+        type: SchedulableTriggerInputTypes.CALENDAR,
+      };
+      const id = await Notifications.scheduleNotificationAsync({
+        content: { title: habitName, body: "Time for your habit" },
+        trigger,
+      });
+      ids.push(id);
+    }
+  } else {
+    const trigger: Notifications.CalendarTriggerInput = {
+      hour: time.hour,
+      minute: time.minute,
+      repeats: true,
+      type: SchedulableTriggerInputTypes.CALENDAR,
+    };
+    const id = await Notifications.scheduleNotificationAsync({
+      content: { title: habitName, body: "Time for your habit" },
+      trigger,
+    });
+    ids.push(id);
+  }
 
-  await AsyncStorage.setItem(getNotificationKey(habitId), id);
+  await AsyncStorage.setItem(getNotificationKey(habitId), JSON.stringify(ids));
   return true;
 }
 
 export async function saveHabitReminder(
   habitId: number,
   habitName: string,
-  time: ReminderTime
+  time: ReminderTime,
+  frequency: "DAILY" | "WEEKLY" = "DAILY",
+  days_of_week?: number[]
 ): Promise<boolean> {
   await AsyncStorage.setItem(getTimeKey(habitId), JSON.stringify(time));
-  const scheduled = await scheduleNotification(habitId, habitName, time);
+  const scheduled = await scheduleNotifications(
+    habitId,
+    habitName,
+    time,
+    frequency,
+    days_of_week
+  );
   return scheduled;
 }
 
 export async function cancelHabitReminder(habitId: number): Promise<void> {
-  const id = await AsyncStorage.getItem(getNotificationKey(habitId));
-  if (id) {
+  const stored = await AsyncStorage.getItem(getNotificationKey(habitId));
+  if (stored) {
     try {
-      await Notifications.cancelScheduledNotificationAsync(id);
+      const ids: string[] = JSON.parse(stored);
+      for (const id of ids) {
+        await Notifications.cancelScheduledNotificationAsync(id);
+      }
     } catch {
       // ignore
     }

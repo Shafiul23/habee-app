@@ -5,23 +5,50 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from "react-native";
-import { editHabit, unarchiveHabit } from "../../lib/api";
+import { editHabit, unarchiveHabit, Habit } from "../../lib/api";
 import PrimaryButton from "../components/PrimaryButton";
 import { isValidHabit } from "../utils/validation";
+import { addDays, format } from "date-fns";
+import { isApplicable } from "../utils/isApplicable";
 
 export default function EditHabitScreen() {
   const route = useRoute<any>();
   const navigation = useNavigation();
-  const { habitId, currentName } = route.params;
+  const { habitId, currentName, frequency: currentFreq, daysOfWeek: currentDays } =
+    route.params;
 
   const [name, setName] = useState(currentName);
+  const [frequency, setFrequency] = useState<"DAILY" | "WEEKLY">(currentFreq);
+  const [days, setDays] = useState<number[]>(currentDays || []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const weekLabels = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+
+  const previewDates = () => {
+    const habit: Habit = {
+      id: habitId,
+      name,
+      start_date: format(new Date(), "yyyy-MM-dd"),
+      frequency,
+      days_of_week: days,
+    };
+    const res: string[] = [];
+    let d = new Date();
+    while (res.length < 3) {
+      if (isApplicable(habit, d)) {
+        res.push(format(d, "EEE MMM d"));
+      }
+      d = addDays(d, 1);
+    }
+    return res;
+  };
 
   const handleUpdate = async () => {
     const { valid, error: validationError } = isValidHabit(name);
@@ -33,8 +60,13 @@ export default function EditHabitScreen() {
 
     setLoading(true);
 
+    if (frequency === "WEEKLY" && days.length === 0) {
+      setError("Select at least one day");
+      return;
+    }
+
     try {
-      await editHabit(habitId, name.trim());
+      await editHabit(habitId, name.trim(), frequency, days);
       navigation.goBack();
     } catch (err) {
       const error = err as AxiosError<any>;
@@ -91,6 +123,65 @@ export default function EditHabitScreen() {
           maxLength={128}
         />
         {error && <Text style={styles.errorMessage}>{error}</Text>}
+
+        <Text style={styles.subLabel}>Frequency</Text>
+        <View style={styles.freqRow}>
+          {(["DAILY", "WEEKLY"] as const).map((f) => (
+            <Pressable
+              key={f}
+              style={[styles.chip, frequency === f && styles.chipSelected]}
+              onPress={() => setFrequency(f)}
+            >
+              <Text
+                style={[styles.chipText, frequency === f && styles.chipTextSel]}
+              >
+                {f === "DAILY" ? "Daily" : "Weekly"}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+
+        {frequency === "WEEKLY" && (
+          <View>
+            <Text style={styles.subLabel}>Days of Week</Text>
+            <View style={styles.weekRow}>
+              {weekLabels.map((label, idx) => {
+                const selected = days.includes(idx);
+                return (
+                  <Pressable
+                    key={idx}
+                    style={[styles.chip, selected && styles.chipSelected]}
+                    onPress={() => {
+                      setDays((prev) =>
+                        prev.includes(idx)
+                          ? prev.filter((d) => d !== idx)
+                          : [...prev, idx]
+                      );
+                    }}
+                  >
+                    <Text
+                      style={[styles.chipText, selected && styles.chipTextSel]}
+                    >
+                      {label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        )}
+
+        {frequency === "WEEKLY" && (
+          <View style={styles.previewBox}>
+            <Text style={styles.subLabel}>Next 3 occurrences</Text>
+            {previewDates().map((d) => (
+              <Text key={d} style={styles.previewText}>
+                {d}
+              </Text>
+            ))}
+          </View>
+        )}
+
         <PrimaryButton
           title="Update"
           onPress={handleUpdate}
@@ -122,6 +213,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     color: "#000",
   },
+  subLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 8,
+    color: "#000",
+  },
   input: {
     borderWidth: 1,
     borderColor: "#ccc",
@@ -139,5 +236,40 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginBottom: 14,
     textAlign: "left",
+  },
+  freqRow: {
+    flexDirection: "row",
+    gap: 8,
+    marginBottom: 16,
+  },
+  chip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#ccc",
+  },
+  chipSelected: {
+    backgroundColor: "#f7ce46",
+    borderColor: "#f7ce46",
+  },
+  chipText: {
+    color: "#000",
+    fontSize: 14,
+  },
+  chipTextSel: {
+    fontWeight: "700",
+  },
+  weekRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+  previewBox: {
+    marginBottom: 16,
+  },
+  previewText: {
+    fontSize: 14,
+    color: "#000",
   },
 });

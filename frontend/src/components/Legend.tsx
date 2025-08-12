@@ -8,9 +8,9 @@ type LegendItem = {
 
 const defaultLegendData: LegendItem[] = [
   { label: "Complete", color: "#52c41a" },
-  { label: "Partial", color: "#f7ce46" },
   { label: "Missed", color: "#ff4d4f" },
   { label: "Unlogged", color: "#e5e5e5" },
+  { label: "Inactive (not scheduled)", color: "#d3d3d3" },
 ];
 
 type LegendProps = {

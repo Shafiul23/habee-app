@@ -11,24 +11,20 @@ import {
   ReminderTime,
   MAX_REMINDERS,
 } from "../../lib/habitReminders";
+import { Habit } from "../../lib/api";
 
 type Props = {
-  habitId: number;
-  habitName: string;
+  habit: Habit;
   onClose: () => void;
 };
 
-export default function HabitReminderModal({
-  habitId,
-  habitName,
-  onClose,
-}: Props) {
+export default function HabitReminderModal({ habit, onClose }: Props) {
   const [time, setTime] = useState<Date>(new Date());
   const [hasReminder, setHasReminder] = useState(false);
 
   useEffect(() => {
     const load = async () => {
-      const stored = await getHabitReminderTime(habitId);
+      const stored = await getHabitReminderTime(habit.id);
       if (stored) {
         const d = new Date();
         d.setHours(stored.hour);
@@ -39,7 +35,7 @@ export default function HabitReminderModal({
       }
     };
     load();
-  }, [habitId]);
+    }, [habit.id]);
 
   const handleSave = async () => {
     if (!hasReminder) {
@@ -57,7 +53,13 @@ export default function HabitReminderModal({
       hour: time.getHours(),
       minute: time.getMinutes(),
     };
-    const granted = await saveHabitReminder(habitId, habitName, reminder);
+    const granted = await saveHabitReminder(
+      habit.id,
+      habit.name,
+      reminder,
+      habit.frequency,
+      habit.days_of_week
+    );
     if (!granted) {
       Toast.show({
         type: "info",
@@ -69,7 +71,7 @@ export default function HabitReminderModal({
   };
 
   const handleRemove = async () => {
-    await removeHabitReminder(habitId);
+    await removeHabitReminder(habit.id);
     onClose();
   };
 

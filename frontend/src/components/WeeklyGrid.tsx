@@ -1,17 +1,9 @@
 // components/WeeklyGrid.tsx
-import {
-  eachDayOfInterval,
-  endOfMonth,
-  format,
-  isAfter,
-  isBefore,
-  isEqual,
-  parseISO,
-  startOfMonth,
-} from "date-fns";
+import { eachDayOfInterval, endOfMonth, format, isBefore, startOfMonth } from "date-fns";
 import React, { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { getHabitLogSummary, Habit } from "../../lib/api";
+import { isApplicable } from "../utils/isApplicable";
 import { usePaginatedHabits } from "../hooks/usePaginatedHabits";
 import GridCell from "./GridCell";
 import Toast from "react-native-toast-message";
@@ -90,32 +82,18 @@ export default function WeeklyGrid({
                 return (
                   <View key={iso} style={styles.row}>
                     {habitsToDisplay.map((habit) => {
-                      const isFuture = isAfter(day, today);
-                      const habitStart = parseISO(habit.start_date);
-                      const started =
-                        isBefore(habitStart, day) || isEqual(habitStart, day);
                       const completed = completedLogs[iso]?.has(habit.id);
-                      const paused = habit.pauses?.some((p) => {
-                        const pauseStart = parseISO(p.start_date);
-                        const pauseEnd = p.end_date
-                          ? parseISO(p.end_date)
-                          : null;
-                        const startsBeforeOrOn =
-                          isBefore(pauseStart, day) || isEqual(pauseStart, day);
-                        const endsAfterOrOn =
-                          !pauseEnd ||
-                          isAfter(pauseEnd, day) ||
-                          isEqual(pauseEnd, day);
-                        return startsBeforeOrOn && endsAfterOrOn;
-                      });
-                      const inactive = isFuture || !started;
-
+                      const applicable = isApplicable(habit, day);
+                      let status: "complete" | "missed" | "unlogged" | undefined;
+                      if (applicable) {
+                        if (completed) status = "complete";
+                        else status = isBefore(day, today) ? "missed" : "unlogged";
+                      }
                       return (
                         <GridCell
                           key={`${habit.id}-${iso}`}
-                          completed={!!completed}
-                          inactive={!!inactive}
-                          paused={!!paused}
+                          applicable={applicable}
+                          status={status}
                           size={cellSize}
                         />
                       );

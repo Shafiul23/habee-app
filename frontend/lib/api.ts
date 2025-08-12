@@ -40,21 +40,28 @@ export type ArchivedHabit = Habit & {
 };
 
 export type CalendarSummary = {
-  [date: string]: {
-    status: "inactive" | "incomplete" | "partial" | "complete" | "future";
-    completed?: number;
-    total?: number;
+  [habitId: number]: {
+    [date: string]: {
+      applicable: boolean;
+      status?: "complete" | "missed" | "unlogged";
+    };
   };
 };
 
 // API Calls
-export const getHabits = async (date?: string): Promise<Habit[]> => {
-  const res = await api.get(date ? `/habits?date=${date}` : `/habits`);
+export const getHabits = async (
+  date?: string,
+  tz?: string
+): Promise<Habit[]> => {
+  const res = await api.get(`/habits`, { params: { date, tz } });
   return res.data;
 };
 
-export const getHabitSummary = async (date: string): Promise<Habit[]> => {
-  const res = await api.get(`/habits/daily-summary?date=${date}`);
+export const getHabitSummary = async (
+  date: string,
+  tz?: string
+): Promise<Habit[]> => {
+  const res = await api.get(`/habits/daily-summary`, { params: { date, tz } });
   return res.data;
 };
 
@@ -98,6 +105,20 @@ export const archiveHabit = async (habitId: number) => {
 
 export const unarchiveHabit = async (habitId: number) => {
   await api.post(`/habits/${habitId}/unarchive`);
+};
+
+export const createHabit = async (
+  name: string,
+  start_date: string,
+  frequency?: "DAILY" | "WEEKLY",
+  days_of_week?: number[]
+) => {
+  return await api.post(`/habits`, {
+    name,
+    start_date,
+    frequency,
+    days_of_week,
+  });
 };
 
 export const editHabit = async (

@@ -38,6 +38,8 @@ export default function NotificationSettingsScreen() {
     habitName: string;
     time: ReminderTime;
     enabled: boolean;
+    frequency: "DAILY" | "WEEKLY";
+    daysOfWeek?: number[];
   };
   const [customReminders, setCustomReminders] = useState<CustomReminder[]>([]);
   const disabledReminders = useRef<Set<number>>(new Set());
@@ -104,18 +106,22 @@ export default function NotificationSettingsScreen() {
           return;
         }
         const habits = await getHabits();
-        const habitMap = new Map(habits.map((h) => [h.id, h.name]));
+        const habitMap = new Map(
+          habits.map((h) => [h.id, { name: h.name, frequency: h.frequency, days: h.days_of_week }])
+        );
         const items: CustomReminder[] = [];
         for (const key of reminderKeys) {
           const id = parseInt(key.split(":")[1], 10);
           const time = await getHabitReminderTime(id);
-          const name = habitMap.get(id);
-          if (time && name) {
+          const info = habitMap.get(id);
+          if (time && info) {
             items.push({
               habitId: id,
-              habitName: name,
+              habitName: info.name,
               time,
               enabled: true,
+              frequency: info.frequency,
+              daysOfWeek: info.days,
             });
           }
         }
@@ -152,7 +158,9 @@ export default function NotificationSettingsScreen() {
       await saveHabitReminder(
         reminder.habitId,
         reminder.habitName,
-        reminder.time
+        reminder.time,
+        reminder.frequency,
+        reminder.daysOfWeek
       );
       disabledReminders.current.delete(reminder.habitId);
     } else {

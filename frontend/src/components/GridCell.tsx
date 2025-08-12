@@ -1,34 +1,32 @@
 // components/GridCell.tsx
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, Text } from "react-native";
 
-type Props = {
-  completed: boolean;
-  inactive: boolean;
-  paused: boolean;
+interface Props {
+  applicable: boolean;
+  status?: "complete" | "missed" | "unlogged";
   size: number;
-};
+}
 
-export default function GridCell({ completed, inactive, paused, size }: Props) {
-  let bgColor = "#eee";
+export default function GridCell({ applicable, status, size }: Props) {
+  let bgColor = "#d3d3d3";
+  let symbol = "";
 
-  if (inactive) {
-    bgColor = "#e5e5e5";
-  } else if (paused) {
-    bgColor = "#909090";
-  } else if (completed) {
+  if (!applicable) {
+    bgColor = "#d3d3d3";
+    symbol = "-";
+  } else if (status === "complete") {
     bgColor = "#52c41a";
-  } else {
+  } else if (status === "missed") {
     bgColor = "#ff4d4f";
+  } else {
+    bgColor = "#e5e5e5";
   }
 
   return (
-    <View
-      style={[
-        styles.cell,
-        { backgroundColor: bgColor, width: size, height: size },
-      ]}
-    ></View>
+    <View style={[styles.cell, { backgroundColor: bgColor, width: size, height: size }]}>
+      {symbol ? <Text style={styles.icon}>{symbol}</Text> : null}
+    </View>
   );
 }
 
@@ -40,8 +38,8 @@ const styles = StyleSheet.create({
     margin: 2,
   },
   icon: {
-    fontSize: 22,
-    fontWeight: "900",
+    fontSize: 18,
+    fontWeight: "700",
     color: "#000",
   },
 });

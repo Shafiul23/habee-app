@@ -273,6 +273,8 @@ export default function Home() {
             navigation.navigate("EditHabit", {
               habitId: habit.id,
               currentName: habit.name,
+              frequency: habit.frequency,
+              daysOfWeek: habit.days_of_week,
             });
           }}
           onDelete={() => handleDeleteHabit(showHabitMenu)}
@@ -289,8 +291,7 @@ export default function Home() {
       )}
       {reminderHabit && (
         <HabitReminderModal
-          habitId={reminderHabit.id}
-          habitName={reminderHabit.name}
+          habit={reminderHabit}
           onClose={() => setReminderHabit(null)}
         />
       )}
