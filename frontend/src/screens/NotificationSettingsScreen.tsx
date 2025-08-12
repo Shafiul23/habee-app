@@ -3,12 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as Notifications from "expo-notifications";
 import { useFocusEffect } from "@react-navigation/native";
-import React, {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Alert,
   Linking,
@@ -241,10 +236,10 @@ export default function NotificationSettingsScreen() {
 
       {customReminders.length > 0 && (
         <>
-          <Text style={styles.sectionTitle}>Daily Habits</Text>
+          <Text style={styles.sectionTitle}>Active Reminders</Text>
           {customReminders.map((r) => (
             <View key={r.habitId} style={styles.reminderRow}>
-              <View>
+              <View style={styles.nameAndTime}>
                 <Text style={styles.habitName}>{r.habitName}</Text>
                 <Text style={styles.reminderTime}>
                   {formatReminderTime(r.time)}
@@ -296,13 +291,16 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#000",
     marginTop: 30,
-    marginBottom: 10,
+    marginBottom: 20,
   },
   reminderRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 15,
+  },
+  nameAndTime: {
+    maxWidth: "75%",
   },
   habitName: {
     fontSize: 16,
