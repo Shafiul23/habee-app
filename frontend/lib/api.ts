@@ -40,11 +40,10 @@ export type ArchivedHabit = Habit & {
 };
 
 export type CalendarSummary = {
-  [habitId: number]: {
-    [date: string]: {
-      applicable: boolean;
-      status?: "complete" | "missed" | "unlogged";
-    };
+  [date: string]: {
+    status: "complete" | "partial" | "incomplete" | "inactive" | "future";
+    completed?: number;
+    total?: number;
   };
 };
 

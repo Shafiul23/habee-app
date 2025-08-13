@@ -502,26 +502,17 @@ def calendar_summary():
             summary[day.isoformat()] = {"status": "future"}
             continue
 
-        # Get habits active on that day
-        def is_active(h):
-            if h.start_date > day:
-                return False
-            for p in h.pauses:
-                if p.start_date <= day and (
-                    p.end_date is None or p.end_date >= day
-                ):
-                    return False
-            return True
-
-        active_habits = [h for h in habits if is_active(h)]
-        total = len(active_habits)
+        # Only consider habits that should appear on this day
+        applicable_habits = [h for h in habits if is_applicable(h, day)]
+        total = len(applicable_habits)
 
         if total == 0:
             summary[day.isoformat()] = {"status": "inactive"}
             continue
 
         completed = logs_by_date.get(day, [])
-        done = len(set(completed))
+        applicable_ids = {h.id for h in applicable_habits}
+        done = len({hid for hid in completed if hid in applicable_ids})
 
         if done == 0:
             status = "incomplete"
