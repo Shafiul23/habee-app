@@ -4,6 +4,7 @@ import {
   endOfMonth,
   format,
   isBefore,
+  isAfter,
   startOfMonth,
   parseISO,
 } from "date-fns";
@@ -90,17 +91,24 @@ export default function WeeklyGrid({
                   <View key={iso} style={styles.row}>
                     {habitsToDisplay.map((habit) => {
                       const completed = completedLogs[iso]?.has(habit.id);
-                      const applicable = isApplicable(habit, day);
-                      const paused = habit.pauses?.some((p) => {
+
+                      const inFuture = isAfter(day, today);
+                      const baseApplicable = isApplicable(habit, day);
+                      const isPaused = habit.pauses?.some((p) => {
                         const s = parseISO(p.start_date);
                         const e = p.end_date ? parseISO(p.end_date) : null;
                         return day >= s && (!e || day <= e);
                       });
+
+                      const paused = !inFuture && (isPaused || !baseApplicable);
+                      const applicable = !inFuture && baseApplicable && !paused;
+
                       let status: "complete" | "missed" | "unlogged" | undefined;
                       if (applicable) {
                         if (completed) status = "complete";
                         else status = isBefore(day, today) ? "missed" : "unlogged";
                       }
+
                       return (
                         <GridCell
                           key={`${habit.id}-${iso}`}

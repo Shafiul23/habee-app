@@ -8,10 +8,18 @@ type Props = {
   onShowMenu: () => void;
 };
 
+const dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
 export default function UpcomingHabitItem({ item, onShowMenu }: Props) {
+  const days = item.days_of_week?.slice().sort((a, b) => a - b);
+  const subtitle = days?.map((d) => dayLabels[d]).join(", ");
+
   return (
     <View style={styles.habit}>
-      <Text style={styles.habitText}>{item.name}</Text>
+      <View style={styles.textCol}>
+        <Text style={styles.habitText}>{item.name}</Text>
+        {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+      </View>
       <Pressable onPress={onShowMenu}>
         <Ionicons name="ellipsis-vertical" size={20} color="#000" />
       </Pressable>
@@ -34,12 +42,19 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 1,
   },
+  textCol: {
+    flexShrink: 1,
+    flexGrow: 1,
+    maxWidth: "85%",
+  },
   habitText: {
     fontSize: 17,
     fontWeight: "700",
     color: "#000",
-    flexShrink: 1,
-    flexGrow: 1,
-    maxWidth: "85%",
+  },
+  subtitle: {
+    fontSize: 14,
+    color: "#333",
+    marginTop: 2,
   },
 });
