@@ -8,6 +8,13 @@ import Legend from "../components/Legend";
 import LoadingSpinner from "../components/LoadingSpinner";
 import Toast from "react-native-toast-message";
 
+const calendarLegendData = [
+  { label: "Completed all", color: "#52c41a" },
+  { label: "Missed all", color: "#ff4d4f" },
+  { label: "Partial", color: "#f7ce46" },
+  { label: "Inactive", color: "#e5e5e5" },
+];
+
 export default function CalendarScreen() {
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [calendarData, setCalendarData] = useState<CalendarSummary>({});
@@ -67,7 +74,7 @@ export default function CalendarScreen() {
         ) : (
           <>
             <CalendarGrid month={selectedMonth} summary={calendarData} />
-            <Legend />
+            <Legend data={calendarLegendData} />
           </>
         )}
       </ScrollView>

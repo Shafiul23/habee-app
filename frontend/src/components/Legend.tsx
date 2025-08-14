@@ -6,21 +6,14 @@ type LegendItem = {
   color: string;
 };
 
-const defaultLegendData: LegendItem[] = [
-  { label: "Complete", color: "#52c41a" },
-  { label: "Missed", color: "#ff4d4f" },
-  { label: "Unlogged", color: "#e5e5e5" },
-  { label: "Inactive (not scheduled)", color: "#909090" },
-];
-
 type LegendProps = {
   data?: LegendItem[];
 };
 
-export default function Legend({ data = defaultLegendData }: LegendProps) {
+export default function Legend({ data }: LegendProps) {
   return (
     <View style={styles.legendRow}>
-      {data.map(({ label, color }) => (
+      {data?.map(({ label, color }) => (
         <View key={label} style={styles.legendItem}>
           <View style={[styles.legendDot, { backgroundColor: color }]} />
           <Text style={styles.legendLabel}>{label}</Text>

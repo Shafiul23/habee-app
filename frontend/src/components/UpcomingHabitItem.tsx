@@ -8,7 +8,7 @@ type Props = {
   onShowMenu: () => void;
 };
 
-const dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const dayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 export default function UpcomingHabitItem({ item, onShowMenu }: Props) {
   const days = item.days_of_week?.slice().sort((a, b) => a - b);
@@ -32,7 +32,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 18,
+    paddingHorizontal: 18,
+    paddingVertical: 14,
     borderRadius: 12,
     backgroundColor: "#f7ce46",
     marginBottom: 14,

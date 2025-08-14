@@ -59,14 +59,20 @@ export default function CalendarGrid({ month, summary }: Props) {
             }
 
             const iso = format(day, "yyyy-MM-dd");
-            const status = summary[iso]?.status;
+            const status = summary[iso]?.status as
+              | "complete"
+              | "partial"
+              | "incomplete"
+              | "inactive"
+              | "future"
+              | undefined;
 
             const bgColor = {
               complete: "#52c41a",
               partial: "#f7ce46",
               incomplete: "#ff4d4f",
               inactive: "#e5e5e5",
-              future: "#e5e5e5", // Same as inactive
+              future: "#e5e5e5",
             }[status ?? "inactive"];
 
             return (

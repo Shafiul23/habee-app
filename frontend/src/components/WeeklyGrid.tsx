@@ -93,20 +93,37 @@ export default function WeeklyGrid({
                       const completed = completedLogs[iso]?.has(habit.id);
 
                       const inFuture = isAfter(day, today);
-                      const baseApplicable = isApplicable(habit, day);
-                      const isPaused = habit.pauses?.some((p) => {
-                        const s = parseISO(p.start_date);
-                        const e = p.end_date ? parseISO(p.end_date) : null;
-                        return day >= s && (!e || day <= e);
-                      });
+                      const startDate = parseISO(habit.start_date);
+                      const beforeStart = isBefore(day, startDate);
 
-                      const paused = !inFuture && (isPaused || !baseApplicable);
-                      const applicable = !inFuture && baseApplicable && !paused;
+                      const inPause =
+                        habit.pauses?.some((p) => {
+                          const s = parseISO(p.start_date);
+                          const e = p.end_date ? parseISO(p.end_date) : null;
+                          return day >= s && (!e || day <= e);
+                        }) ?? false;
 
-                      let status: "complete" | "missed" | "unlogged" | undefined;
+                      const scheduleApplicable = isApplicable(habit, day);
+
+                      const paused =
+                        !inFuture &&
+                        (inPause || (!beforeStart && !scheduleApplicable));
+
+                      const applicable =
+                        !inFuture &&
+                        !beforeStart &&
+                        !inPause &&
+                        scheduleApplicable;
+
+                      let status:
+                        | "complete"
+                        | "missed"
+                        | "unlogged"
+                        | undefined;
                       if (applicable) {
                         if (completed) status = "complete";
-                        else status = isBefore(day, today) ? "missed" : "unlogged";
+                        else
+                          status = isBefore(day, today) ? "missed" : "unlogged";
                       }
 
                       return (
