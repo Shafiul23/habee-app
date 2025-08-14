@@ -1,6 +1,6 @@
 import { addMonths, format, subMonths } from "date-fns";
 import React, { useEffect, useState } from "react";
-import { RefreshControl, ScrollView, StyleSheet, View } from "react-native";
+import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { CalendarSummary, getCalendarSummary } from "../../lib/api";
 import CalendarGrid from "../components/CalendarGrid";
 import HeaderNav from "../components/HeaderNav";
@@ -11,6 +11,7 @@ import Toast from "react-native-toast-message";
 export default function CalendarScreen() {
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [calendarData, setCalendarData] = useState<CalendarSummary>({});
+  const [selectedDay, setSelectedDay] = useState<Date | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -66,7 +67,31 @@ export default function CalendarScreen() {
           <LoadingSpinner />
         ) : (
           <>
-            <CalendarGrid month={selectedMonth} summary={calendarData} />
+            <CalendarGrid
+              month={selectedMonth}
+              summary={calendarData}
+              onDayPress={setSelectedDay}
+            />
+            {selectedDay && (
+              <View style={styles.dayInfo}>
+                <Text style={styles.dayInfoDate}>
+                  {format(selectedDay, "MMMM d, yyyy")}
+                </Text>
+                <Text style={styles.dayInfoText}>
+                  Status: {
+                    calendarData[format(selectedDay, "yyyy-MM-dd")]?.status ||
+                    "inactive"
+                  }
+                </Text>
+                <Text style={styles.dayInfoText}>
+                  {`Habits completed: ${
+                    calendarData[format(selectedDay, "yyyy-MM-dd")]?.completed ?? 0
+                  }/${
+                    calendarData[format(selectedDay, "yyyy-MM-dd")]?.total ?? 0
+                  }`}
+                </Text>
+              </View>
+            )}
             <Legend />
           </>
         )}
@@ -81,5 +106,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingBottom: 100,
     backgroundColor: "#fff",
+  },
+  dayInfo: {
+    marginTop: 20,
+    alignItems: "center",
+  },
+  dayInfoDate: {
+    fontWeight: "700",
+    marginBottom: 4,
+  },
+  dayInfoText: {
+    fontSize: 14,
   },
 });
