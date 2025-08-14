@@ -6,17 +6,22 @@ import {
   startOfMonth,
 } from "date-fns";
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { CalendarSummary } from "../../lib/api";
 
-type Props = {
+type CalendarGridProps = {
   month: Date;
   summary: CalendarSummary;
+  onDayPress?: (day: Date) => void;
 };
 
 const dayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-export default function CalendarGrid({ month, summary }: Props) {
+export default function CalendarGrid({
+  month,
+  summary,
+  onDayPress,
+}: CalendarGridProps) {
   const monthStart = startOfMonth(month);
   const monthEnd = endOfMonth(month);
   const allDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
@@ -76,12 +81,13 @@ export default function CalendarGrid({ month, summary }: Props) {
             }[status ?? "inactive"];
 
             return (
-              <View
+              <TouchableOpacity
                 key={iso}
                 style={[styles.cell, { backgroundColor: bgColor }]}
+                onPress={() => onDayPress?.(day)}
               >
                 <Text style={styles.dayText}>{day.getDate()}</Text>
-              </View>
+              </TouchableOpacity>
             );
           })}
         </View>

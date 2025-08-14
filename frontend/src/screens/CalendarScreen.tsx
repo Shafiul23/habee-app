@@ -1,23 +1,24 @@
 import { addMonths, format, subMonths } from "date-fns";
 import React, { useEffect, useState } from "react";
-import { RefreshControl, ScrollView, StyleSheet, View } from "react-native";
+import {
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  View,
+  Text,
+} from "react-native";
 import { CalendarSummary, getCalendarSummary } from "../../lib/api";
 import CalendarGrid from "../components/CalendarGrid";
 import HeaderNav from "../components/HeaderNav";
 import Legend from "../components/Legend";
 import LoadingSpinner from "../components/LoadingSpinner";
 import Toast from "react-native-toast-message";
-
-const calendarLegendData = [
-  { label: "Completed all", color: "#52c41a" },
-  { label: "Missed all", color: "#ff4d4f" },
-  { label: "Partial", color: "#f7ce46" },
-  { label: "Inactive", color: "#e5e5e5" },
-];
+import SelectedDayCard from "../components/SelectedDayCard";
 
 export default function CalendarScreen() {
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [calendarData, setCalendarData] = useState<CalendarSummary>({});
+  const [selectedDay, setSelectedDay] = useState<Date | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -39,6 +40,7 @@ export default function CalendarScreen() {
   };
 
   useEffect(() => {
+    setSelectedDay(null);
     fetchSummary(true);
   }, [selectedMonth]);
 
@@ -73,8 +75,17 @@ export default function CalendarScreen() {
           <LoadingSpinner />
         ) : (
           <>
-            <CalendarGrid month={selectedMonth} summary={calendarData} />
-            <Legend data={calendarLegendData} />
+            <CalendarGrid
+              month={selectedMonth}
+              summary={calendarData}
+              onDayPress={setSelectedDay}
+            />
+            {selectedDay && (
+              <SelectedDayCard
+                date={selectedDay}
+                entry={calendarData[format(selectedDay, "yyyy-MM-dd")] as any}
+              />
+            )}
           </>
         )}
       </ScrollView>
@@ -88,5 +99,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingBottom: 100,
     backgroundColor: "#fff",
+  },
+  dayInfo: {
+    marginTop: 40,
+    alignItems: "center",
+  },
+  dayInfoDate: {
+    fontWeight: "700",
+    marginBottom: 4,
+  },
+  dayInfoText: {
+    fontSize: 14,
   },
 });
