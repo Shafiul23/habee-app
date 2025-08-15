@@ -15,6 +15,7 @@ import { format } from "date-fns";
 import { createHabit, unarchiveHabit } from "../../lib/api";
 import PrimaryButton from "../components/PrimaryButton";
 import { isValidHabit } from "../utils/validation";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function CreateHabitScreen() {
   const navigation = useNavigation();
@@ -93,6 +94,11 @@ export default function CreateHabitScreen() {
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
+      {Platform.OS === "android" && (
+        <Pressable onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color="#000" />
+        </Pressable>
+      )}
       <View style={styles.card}>
         <Text style={styles.label}>New Habit</Text>
         <TextInput
@@ -191,6 +197,12 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginBottom: 10,
     color: "#000",
+  },
+  backButton: {
+    position: "absolute",
+    top: Platform.OS === "ios" ? 60 : 30,
+    left: 20,
+    zIndex: 10,
   },
   subLabel: {
     fontSize: 14,

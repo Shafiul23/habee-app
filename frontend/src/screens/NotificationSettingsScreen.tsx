@@ -2,7 +2,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as Notifications from "expo-notifications";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Alert,
@@ -12,7 +12,9 @@ import {
   Switch,
   Text,
   View,
+  Pressable,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 import {
   cancelAllReminders,
@@ -29,6 +31,7 @@ import { getHabits } from "../../lib/api";
 import PrimaryButton from "../components/PrimaryButton";
 
 export default function NotificationSettingsScreen() {
+  const navigation = useNavigation();
   const [reminderEnabled, setReminderEnabled] = useState(false);
   const [selectedTime, setSelectedTime] = useState(new Date());
   const [pendingTime, setPendingTime] = useState<Date | null>(null);
@@ -54,8 +57,26 @@ export default function NotificationSettingsScreen() {
     loadSettings();
   }, []);
 
-  const handleTimeChange = async (_: any, time?: Date) => {
-    if (time) setPendingTime(time);
+  const handleTimeChange = async (event: any, time?: Date) => {
+    if (Platform.OS === "android") {
+      if (event.type === "set" && time) {
+        const hour = time.getHours();
+        const minute = time.getMinutes();
+        await scheduleDailyReminder(hour, minute);
+        await AsyncStorage.setItem("reminderTime", time.toISOString());
+        await AsyncStorage.setItem("reminderEnabled", "true");
+        setSelectedTime(time);
+        setEditing(false);
+        Alert.alert(
+          "Reminder Set",
+          `You'll be reminded daily at ${hour}:${minute < 10 ? "0" : ""}${minute}`
+        );
+      } else {
+        setEditing(false);
+      }
+    } else if (time) {
+      setPendingTime(time);
+    }
   };
 
   const handleToggleReminder = async (val: boolean) => {
@@ -171,6 +192,14 @@ export default function NotificationSettingsScreen() {
 
   return (
     <View style={styles.container}>
+      {Platform.OS === "android" && (
+        <Pressable
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
+          <Ionicons name="arrow-back" size={24} color="#000" />
+        </Pressable>
+      )}
       <View style={styles.row}>
         <Text style={styles.title}>Daily Reminder</Text>
         <Switch value={reminderEnabled} onValueChange={handleToggleReminder} />
@@ -191,7 +220,7 @@ export default function NotificationSettingsScreen() {
                 onChange={handleTimeChange}
               />
 
-              {pendingTime && (
+              {Platform.OS === "ios" && pendingTime && (
                 <PrimaryButton
                   title="Confirm Reminder Time"
                   onPress={async () => {
@@ -273,6 +302,12 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
+  },
+  backButton: {
+    position: "absolute",
+    top: Platform.OS === "ios" ? 60 : 30,
+    left: 20,
+    zIndex: 10,
   },
   row: {
     flexDirection: "row",
