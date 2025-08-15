@@ -209,7 +209,7 @@ def archive_habit(habit_id):
     user_id = get_jwt_identity()
     habit = Habit.query.filter_by(id=habit_id, user_id=user_id).first()
     if not habit:
-        return {"error": "Habit not found"}, 404
+        return jsonify({"error": "Habit not found"}), 404
 
     open_pause = HabitPause.query.filter_by(habit_id=habit_id, end_date=None).first()
     if not open_pause:
