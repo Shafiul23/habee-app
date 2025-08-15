@@ -107,6 +107,10 @@ eas submit --platform ios --path ./your-app.ipa
 
 ## 🧪 Testing
 
-Coming soon (MVP first!)
+Run the frontend unit tests with:
+
+```bash
+npm test
+```
 
 ---

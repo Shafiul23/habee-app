@@ -24,13 +24,13 @@ To run the app locally:
 
 ## ✅ Testing
 
-Run all backend unit tests with:
+Run backend and frontend test suites with:
 
 ```bash
 ./run_tests.sh
 ```
 
-This uses a temporary SQLite database so it won't touch your local data.
+Backend tests use a temporary SQLite database so they won't touch your local data.
 
 ---
 ## 🔜 Coming Soon
