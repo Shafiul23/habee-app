@@ -1,4 +1,4 @@
-// components/ProgressDonut.tsx
+// components/ProgressDoughnut.tsx
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import Svg, { Circle } from "react-native-svg";
@@ -12,7 +12,7 @@ type Props = {
   trackColor?: string;
 };
 
-export default function ProgressDonut({
+export default function ProgressDoughnut({
   completed,
   total,
   size = 120,

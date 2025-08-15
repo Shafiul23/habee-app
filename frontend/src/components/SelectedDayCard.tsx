@@ -2,7 +2,7 @@
 import { format } from "date-fns";
 import React, { useEffect, useRef } from "react";
 import { Animated, StyleSheet, Text, View } from "react-native";
-import ProgressDonut from "./ProgressDoughnut";
+import ProgressDoughnut from "./ProgressDoughnut";
 
 type DayEntry = {
   completed: number;
@@ -72,7 +72,7 @@ export default function SelectedDayCard({ date, entry, onHide }: Props) {
           </Text>
         </View>
 
-        <ProgressDonut
+        <ProgressDoughnut
           completed={completed}
           total={total}
           size={120}
