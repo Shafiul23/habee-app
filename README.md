@@ -22,6 +22,17 @@ To run the app locally:
 
 ---
 
+## ✅ Testing
+
+Run all backend unit tests with:
+
+```bash
+./run_tests.sh
+```
+
+This uses a temporary SQLite database so it won't touch your local data.
+
+---
 ## 🔜 Coming Soon
 
 - App Store & Google Play release
