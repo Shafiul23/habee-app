@@ -85,7 +85,7 @@ export default function HabitReminderModal({ habit, onClose }: Props) {
           value={time}
           mode="time"
           is24Hour={true}
-          display={Platform.OS === "ios" ? "spinner" : "default"}
+          display={"spinner"}
           onChange={async (_, selected) => {
             if (selected) {
               setTime(selected);

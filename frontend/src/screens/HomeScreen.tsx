@@ -350,10 +350,13 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingBottom: 100,
+    alignItems: "center",
+    paddingHorizontal: 20,
     backgroundColor: "#fff",
   },
   innerContainer: {
-    paddingHorizontal: 20,
+    width: "100%",
+    maxWidth: 480,
     minHeight: "100%",
   },
   titleRow: {

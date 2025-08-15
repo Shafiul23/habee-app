@@ -69,7 +69,9 @@ export default function NotificationSettingsScreen() {
         setEditing(false);
         Alert.alert(
           "Reminder Set",
-          `You'll be reminded daily at ${hour}:${minute < 10 ? "0" : ""}${minute}`
+          `You'll be reminded daily at ${hour}:${
+            minute < 10 ? "0" : ""
+          }${minute}`
         );
       } else {
         setEditing(false);
@@ -128,7 +130,10 @@ export default function NotificationSettingsScreen() {
         }
         const habits = await getHabits();
         const habitMap = new Map(
-          habits.map((h) => [h.id, { name: h.name, frequency: h.frequency, days: h.days_of_week }])
+          habits.map((h) => [
+            h.id,
+            { name: h.name, frequency: h.frequency, days: h.days_of_week },
+          ])
         );
         const items: CustomReminder[] = [];
         for (const key of reminderKeys) {
@@ -216,7 +221,7 @@ export default function NotificationSettingsScreen() {
                 value={pendingTime || selectedTime}
                 mode="time"
                 is24Hour={false}
-                display={Platform.OS === "ios" ? "spinner" : "default"}
+                display={"spinner"}
                 onChange={handleTimeChange}
               />
 
@@ -304,9 +309,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
   },
   backButton: {
-    position: "absolute",
-    top: Platform.OS === "ios" ? 60 : 30,
-    left: 20,
+    marginBottom: 5,
     zIndex: 10,
   },
   row: {

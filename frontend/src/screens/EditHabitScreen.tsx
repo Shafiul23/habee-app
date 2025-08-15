@@ -20,8 +20,12 @@ import { Ionicons } from "@expo/vector-icons";
 export default function EditHabitScreen() {
   const route = useRoute<any>();
   const navigation = useNavigation();
-  const { habitId, currentName, frequency: currentFreq, daysOfWeek: currentDays } =
-    route.params;
+  const {
+    habitId,
+    currentName,
+    frequency: currentFreq,
+    daysOfWeek: currentDays,
+  } = route.params;
 
   const [name, setName] = useState(currentName);
   const [frequency, setFrequency] = useState<"DAILY" | "WEEKLY">(currentFreq);
@@ -86,12 +90,12 @@ export default function EditHabitScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
+    <KeyboardAvoidingView style={styles.container} behavior={"padding"}>
       {Platform.OS === "android" && (
-        <Pressable onPress={() => navigation.goBack()} style={styles.backButton}>
+        <Pressable
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
           <Ionicons name="arrow-back" size={24} color="#000" />
         </Pressable>
       )}
@@ -190,7 +194,7 @@ const styles = StyleSheet.create({
   },
   backButton: {
     position: "absolute",
-    top: Platform.OS === "ios" ? 60 : 30,
+    top: 50,
     left: 20,
     zIndex: 10,
   },
@@ -229,6 +233,8 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
     borderColor: "#ccc",
+    marginRight: 2,
+    marginBottom: 8,
   },
   chipSelected: {
     backgroundColor: "#f7ce46",
@@ -243,7 +249,8 @@ const styles = StyleSheet.create({
   },
   weekRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    flexWrap: "wrap",
+    justifyContent: "flex-start",
     marginBottom: 16,
   },
 });
