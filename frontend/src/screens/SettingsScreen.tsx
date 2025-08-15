@@ -94,7 +94,6 @@ export default function SettingsScreen() {
           }}
         />
         <PrimaryButton title="Support Habee" onPress={handleSupport} />
-        <PrimaryButton title="Log Out" onPress={handleLogout} />
         <View>
           <Pressable
             style={styles.aboutButton}
@@ -127,6 +126,7 @@ Habee focuses on simplicity, visual progress, and an ad-free experience. Support
             </View>
           )}
         </View>
+        <PrimaryButton title="Log Out" onPress={handleLogout} />
         <PrimaryButton
           title="Delete Account"
           onPress={handleDeleteAccount}

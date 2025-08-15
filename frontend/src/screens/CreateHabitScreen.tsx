@@ -15,6 +15,7 @@ import { format } from "date-fns";
 import { createHabit, unarchiveHabit } from "../../lib/api";
 import PrimaryButton from "../components/PrimaryButton";
 import { isValidHabit } from "../utils/validation";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function CreateHabitScreen() {
   const navigation = useNavigation();
@@ -89,10 +90,15 @@ export default function CreateHabitScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
+    <KeyboardAvoidingView style={styles.container} behavior={"padding"}>
+      {Platform.OS === "android" && (
+        <Pressable
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
+          <Ionicons name="arrow-back" size={24} color="#000" />
+        </Pressable>
+      )}
       <View style={styles.card}>
         <Text style={styles.label}>New Habit</Text>
         <TextInput
@@ -192,6 +198,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     color: "#000",
   },
+  backButton: {
+    position: "absolute",
+    top: 50,
+    left: 20,
+    zIndex: 10,
+  },
   subLabel: {
     fontSize: 14,
     fontWeight: "600",
@@ -227,6 +239,8 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
     borderColor: "#ccc",
+    marginRight: 2,
+    marginBottom: 8,
   },
   chipSelected: {
     backgroundColor: "#f7ce46",
@@ -241,7 +255,8 @@ const styles = StyleSheet.create({
   },
   weekRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    flexWrap: "wrap",
+    justifyContent: "flex-start",
     marginBottom: 16,
   },
 });

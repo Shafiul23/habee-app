@@ -2,7 +2,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as Notifications from "expo-notifications";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Alert,
@@ -12,7 +12,9 @@ import {
   Switch,
   Text,
   View,
+  Pressable,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 import {
   cancelAllReminders,
@@ -27,8 +29,38 @@ import {
 } from "../../lib/habitReminders";
 import { getHabits } from "../../lib/api";
 import PrimaryButton from "../components/PrimaryButton";
+import Constants from "expo-constants";
+
+const DAILY_CHANNEL_ID = "daily-reminders";
+
+async function ensureAndroidReady() {
+  if (Platform.OS !== "android") return true;
+
+  try {
+    await Notifications.setNotificationChannelAsync(DAILY_CHANNEL_ID, {
+      name: "Daily Reminders",
+      importance: Notifications.AndroidImportance.HIGH,
+    });
+  } catch {}
+
+  try {
+    const { status } = await Notifications.getPermissionsAsync();
+    if (status !== "granted") {
+      const req = await Notifications.requestPermissionsAsync();
+      if (req.status !== "granted") return false;
+    }
+  } catch {
+    return false;
+  }
+  return true;
+}
+
+function androidExpoGoUnsupported() {
+  return Platform.OS === "android" && Constants.appOwnership === "expo";
+}
 
 export default function NotificationSettingsScreen() {
+  const navigation = useNavigation();
   const [reminderEnabled, setReminderEnabled] = useState(false);
   const [selectedTime, setSelectedTime] = useState(new Date());
   const [pendingTime, setPendingTime] = useState<Date | null>(null);
@@ -54,23 +86,110 @@ export default function NotificationSettingsScreen() {
     loadSettings();
   }, []);
 
-  const handleTimeChange = async (_: any, time?: Date) => {
-    if (time) setPendingTime(time);
+  const handleTimeChange = async (event: any, time?: Date) => {
+    if (Platform.OS === "android") {
+      if (event.type === "set" && time) {
+        if (androidExpoGoUnsupported()) {
+          Alert.alert(
+            "Not supported in Expo Go",
+            "Daily reminders aren’t available in this app mode on Android."
+          );
+          setEditing(false);
+          return;
+        }
+
+        const okPerm = await ensureAndroidReady();
+        if (!okPerm) {
+          Alert.alert(
+            "Notifications disabled",
+            "Please enable notifications in system settings.",
+            [
+              { text: "Cancel", style: "cancel" },
+              { text: "Open Settings", onPress: () => Linking.openSettings() },
+            ]
+          );
+          setEditing(false);
+          return;
+        }
+
+        const hour = time.getHours();
+        const minute = time.getMinutes();
+        try {
+          await scheduleDailyReminder(hour, minute);
+          await AsyncStorage.setItem("reminderTime", time.toISOString());
+          await AsyncStorage.setItem("reminderEnabled", "true");
+          setSelectedTime(time);
+          setReminderEnabled(true);
+          Alert.alert(
+            "Reminder Set",
+            `You'll be reminded daily at ${hour}:${minute
+              .toString()
+              .padStart(2, "0")}`
+          );
+        } catch (e) {
+          Alert.alert(
+            "Couldn’t schedule reminder",
+            "Your Android version/app mode may not support daily reminders."
+          );
+        } finally {
+          setEditing(false);
+        }
+      } else {
+        setEditing(false);
+      }
+    } else if (time) {
+      setPendingTime(time);
+    }
   };
 
   const handleToggleReminder = async (val: boolean) => {
-    setReminderEnabled(val);
     if (val) {
+      if (androidExpoGoUnsupported()) {
+        setReminderEnabled(false);
+        Alert.alert(
+          "Not supported in Expo Go",
+          "Daily reminders aren’t available in this app mode on Android."
+        );
+        return;
+      }
+
+      const okPerm = await ensureAndroidReady();
+      if (!okPerm) {
+        setReminderEnabled(false);
+        Alert.alert(
+          "Enable Notifications",
+          "Notifications are disabled in your system settings.",
+          [
+            { text: "Cancel", style: "cancel" },
+            { text: "Open Settings", onPress: () => Linking.openSettings() },
+          ]
+        );
+        return;
+      }
+
       const hour = selectedTime.getHours();
       const minute = selectedTime.getMinutes();
-      await scheduleDailyReminder(hour, minute);
-      await AsyncStorage.setItem("reminderTime", selectedTime.toISOString());
-      await AsyncStorage.setItem("reminderEnabled", "true");
-      setEditing(false);
-      setPendingTime(null);
+      try {
+        await scheduleDailyReminder(hour, minute);
+        await AsyncStorage.setItem("reminderTime", selectedTime.toISOString());
+        await AsyncStorage.setItem("reminderEnabled", "true");
+        setReminderEnabled(true);
+        setEditing(false);
+        setPendingTime(null);
+      } catch {
+        setReminderEnabled(false);
+        Alert.alert(
+          "Couldn’t schedule reminder",
+          "Your Android version/app mode may not support daily reminders."
+        );
+      }
     } else {
-      await cancelAllReminders();
-      await AsyncStorage.setItem("reminderEnabled", "false");
+      try {
+        await cancelAllReminders();
+      } finally {
+        await AsyncStorage.setItem("reminderEnabled", "false");
+        setReminderEnabled(false);
+      }
     }
   };
 
@@ -107,7 +226,10 @@ export default function NotificationSettingsScreen() {
         }
         const habits = await getHabits();
         const habitMap = new Map(
-          habits.map((h) => [h.id, { name: h.name, frequency: h.frequency, days: h.days_of_week }])
+          habits.map((h) => [
+            h.id,
+            { name: h.name, frequency: h.frequency, days: h.days_of_week },
+          ])
         );
         const items: CustomReminder[] = [];
         for (const key of reminderKeys) {
@@ -171,6 +293,14 @@ export default function NotificationSettingsScreen() {
 
   return (
     <View style={styles.container}>
+      {Platform.OS === "android" && (
+        <Pressable
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
+          <Ionicons name="arrow-back" size={24} color="#000" />
+        </Pressable>
+      )}
       <View style={styles.row}>
         <Text style={styles.title}>Daily Reminder</Text>
         <Switch value={reminderEnabled} onValueChange={handleToggleReminder} />
@@ -187,11 +317,11 @@ export default function NotificationSettingsScreen() {
                 value={pendingTime || selectedTime}
                 mode="time"
                 is24Hour={false}
-                display={Platform.OS === "ios" ? "spinner" : "default"}
+                display={"spinner"}
                 onChange={handleTimeChange}
               />
 
-              {pendingTime && (
+              {Platform.OS === "ios" && pendingTime && (
                 <PrimaryButton
                   title="Confirm Reminder Time"
                   onPress={async () => {
@@ -273,6 +403,10 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
+  },
+  backButton: {
+    marginBottom: 5,
+    zIndex: 10,
   },
   row: {
     flexDirection: "row",

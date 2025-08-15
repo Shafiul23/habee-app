@@ -35,9 +35,10 @@ export default function HabitReminderModal({ habit, onClose }: Props) {
       }
     };
     load();
-    }, [habit.id]);
+  }, [habit.id]);
 
-  const handleSave = async () => {
+  const handleSave = async (t?: Date) => {
+    const saveTime = t || time;
     if (!hasReminder) {
       const count = await getHabitReminderCount();
       if (count >= MAX_REMINDERS) {
@@ -50,8 +51,8 @@ export default function HabitReminderModal({ habit, onClose }: Props) {
       }
     }
     const reminder: ReminderTime = {
-      hour: time.getHours(),
-      minute: time.getMinutes(),
+      hour: saveTime.getHours(),
+      minute: saveTime.getMinutes(),
     };
     const granted = await saveHabitReminder(
       habit.id,
@@ -67,6 +68,7 @@ export default function HabitReminderModal({ habit, onClose }: Props) {
           "Notifications are disabled. Enable in Settings to receive reminders.",
       });
     }
+    setHasReminder(true);
     onClose();
   };
 
@@ -83,12 +85,19 @@ export default function HabitReminderModal({ habit, onClose }: Props) {
           value={time}
           mode="time"
           is24Hour={true}
-          display="spinner"
-          onChange={(_, selected) => {
-            if (selected) setTime(selected);
+          display={"spinner"}
+          onChange={async (_, selected) => {
+            if (selected) {
+              setTime(selected);
+              if (Platform.OS === "android") {
+                await handleSave(selected);
+              }
+            }
           }}
         />
-        <PrimaryButton title="Save" onPress={handleSave} />
+        {Platform.OS === "ios" && (
+          <PrimaryButton title="Save" onPress={() => handleSave()} />
+        )}
         {hasReminder && (
           <PrimaryButton
             title="Remove"

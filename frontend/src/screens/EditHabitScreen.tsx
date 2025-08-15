@@ -15,12 +15,17 @@ import { editHabit, unarchiveHabit } from "../../lib/api";
 import PrimaryButton from "../components/PrimaryButton";
 import { isValidHabit } from "../utils/validation";
 import { format } from "date-fns";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function EditHabitScreen() {
   const route = useRoute<any>();
   const navigation = useNavigation();
-  const { habitId, currentName, frequency: currentFreq, daysOfWeek: currentDays } =
-    route.params;
+  const {
+    habitId,
+    currentName,
+    frequency: currentFreq,
+    daysOfWeek: currentDays,
+  } = route.params;
 
   const [name, setName] = useState(currentName);
   const [frequency, setFrequency] = useState<"DAILY" | "WEEKLY">(currentFreq);
@@ -85,10 +90,15 @@ export default function EditHabitScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
+    <KeyboardAvoidingView style={styles.container} behavior={"padding"}>
+      {Platform.OS === "android" && (
+        <Pressable
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
+          <Ionicons name="arrow-back" size={24} color="#000" />
+        </Pressable>
+      )}
       <View style={styles.card}>
         <Text style={styles.label}>Edit Habit</Text>
         <TextInput
@@ -182,6 +192,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     color: "#000",
   },
+  backButton: {
+    position: "absolute",
+    top: 50,
+    left: 20,
+    zIndex: 10,
+  },
   subLabel: {
     fontSize: 14,
     fontWeight: "600",
@@ -217,6 +233,8 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
     borderColor: "#ccc",
+    marginRight: 2,
+    marginBottom: 8,
   },
   chipSelected: {
     backgroundColor: "#f7ce46",
@@ -231,7 +249,8 @@ const styles = StyleSheet.create({
   },
   weekRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    flexWrap: "wrap",
+    justifyContent: "flex-start",
     marginBottom: 16,
   },
 });

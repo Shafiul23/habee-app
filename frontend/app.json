@@ -31,7 +31,9 @@
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#f7ce46"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": ["POST_NOTIFICATIONS"],
+      "useNextNotificationsApi": true
     },
     "web": {
       "favicon": "./assets/favicon.png"
