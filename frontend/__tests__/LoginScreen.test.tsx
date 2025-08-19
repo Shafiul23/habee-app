@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { Platform } from 'react-native';
 import LoginScreen from '../src/screens/LoginScreen';
 import Toast from 'react-native-toast-message';
 
@@ -22,6 +23,7 @@ jest.mock('react-native-toast-message', () => ({
 jest.mock('@env', () => ({
   DEV_USER: '',
   DEV_PASSWORD: '',
+  GOOGLE_CLIENT_ID: '',
 }), { virtual: true });
 jest.mock('expo-apple-authentication', () => ({
   AppleAuthenticationButton: () => null,
@@ -29,6 +31,12 @@ jest.mock('expo-apple-authentication', () => ({
   AppleAuthenticationButtonStyle: { BLACK: 'BLACK' },
   AppleAuthenticationScope: { FULL_NAME: 0, EMAIL: 1 },
   signInAsync: jest.fn(),
+}));
+jest.mock('expo-auth-session/providers/google', () => ({
+  useIdTokenAuthRequest: () => [null, null, jest.fn()],
+}));
+jest.mock('expo-web-browser', () => ({
+  maybeCompleteAuthSession: jest.fn(),
 }));
 
 describe('LoginScreen', () => {
@@ -43,5 +51,11 @@ describe('LoginScreen', () => {
         text2: 'Enter a valid email address.',
       });
     });
+  });
+
+  it('renders Google sign-in button on Android', () => {
+    (Platform as any).OS = 'android';
+    const { getByText } = render(<LoginScreen />);
+    expect(getByText('Sign in with Google')).toBeTruthy();
   });
 });

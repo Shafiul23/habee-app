@@ -9,6 +9,8 @@ from functools import wraps
 
 # Apple JWT verification
 from jwt import PyJWKClient, InvalidTokenError
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 import os
 import re
 import uuid
@@ -16,6 +18,7 @@ import jwt
 
 auth_bp = Blueprint("auth", __name__)
 APPLE_CLIENT_ID = os.getenv("APPLE_CLIENT_ID")
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 
 
 def retry_on_operational_error(fn):
@@ -142,6 +145,60 @@ def apple_login():
         db.session.rollback()
         user = User.query.filter(
             (User.apple_id == apple_id) | (User.email == email)
+        ).first()
+        if not user:
+            return jsonify({"error": "server_error"}), 500
+
+    access_token = create_access_token(identity=str(user.id))
+    return jsonify({"access_token": access_token}), 200
+
+
+@auth_bp.route("/google", methods=["POST"])
+@retry_on_operational_error
+def google_login():
+    data = request.get_json(silent=True) or {}
+    token = data.get("token")
+    if not token:
+        return jsonify({"error": "Token is required"}), 400
+
+    try:
+        decoded = id_token.verify_oauth2_token(
+            token, google_requests.Request(), audience=GOOGLE_CLIENT_ID
+        )
+    except Exception:
+        return jsonify({"error": "Invalid token"}), 401
+
+    google_id = decoded.get("sub")
+    email = (decoded.get("email") or "").strip() if decoded else ""
+
+    if not google_id:
+        return jsonify({"error": "Invalid token"}), 401
+
+    try:
+        user = User.query.filter_by(google_id=google_id).first()
+        if not user and email:
+            existing_by_email = User.query.filter_by(email=email).first()
+            if existing_by_email:
+                if not existing_by_email.google_id:
+                    existing_by_email.google_id = google_id
+                user = existing_by_email
+
+        if not user:
+            if not email:
+                return jsonify({
+                    "error": "google_email_missing",
+                    "message": "Google did not provide an email. Please try again shortly.",
+                }), 400
+            user = User(email=email, google_id=google_id)
+            user.set_password(str(uuid.uuid4()))
+            db.session.add(user)
+
+        db.session.commit()
+
+    except IntegrityError:
+        db.session.rollback()
+        user = User.query.filter(
+            (User.google_id == google_id) | (User.email == email)
         ).first()
         if not user:
             return jsonify({"error": "server_error"}), 500

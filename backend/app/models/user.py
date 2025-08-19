@@ -7,6 +7,7 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
     apple_id = db.Column(db.String(255), unique=True, nullable=True)
+    google_id = db.Column(db.String(255), unique=True, nullable=True)
 
     habits = db.relationship(
     'Habit',
