@@ -1,5 +1,12 @@
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import * as AppleAuthentication from "expo-apple-authentication";
+import * as Google from "expo-auth-session/providers/google";
+import * as WebBrowser from "expo-web-browser";
 import React, { useState } from "react";
 import {
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -8,20 +15,14 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import Toast from "react-native-toast-message";
 import api from "../../lib/api";
+import { requestNotificationPermissions } from "../../lib/requestNotificationPermissions";
+import { RootStackParamList } from "../../types";
 import PrimaryButton from "../components/PrimaryButton";
 import { useAuth } from "../contexts/AuthContext";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../../types";
-import { useNavigation } from "@react-navigation/native";
-import Toast from "react-native-toast-message";
 import { isValidEmail } from "../utils/validation";
-import { requestNotificationPermissions } from "../../lib/requestNotificationPermissions";
-import { DEV_USER, DEV_PASSWORD, GOOGLE_CLIENT_ID } from "@env";
-import * as AppleAuthentication from "expo-apple-authentication";
-import * as WebBrowser from "expo-web-browser";
-import * as Google from "expo-auth-session/providers/google";
+import GoogleSigninButton from "../components/GoogleSigninButton";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -36,8 +37,8 @@ const LoginScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const { login } = useAuth();
   const [, , promptAsync] = Google.useIdTokenAuthRequest({
-    clientId: GOOGLE_CLIENT_ID,
-    androidClientId: GOOGLE_CLIENT_ID,
+    clientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
   });
 
   const handleLogin = async () => {
@@ -129,6 +130,7 @@ const LoginScreen = () => {
         text1: "Welcome!",
       });
     } catch (err: any) {
+      console.log(err.message);
       Toast.show({
         type: "error",
         text1: "Google Sign-In Failed",
@@ -191,12 +193,7 @@ const LoginScreen = () => {
         )}
 
         {Platform.OS === "android" && (
-          <PrimaryButton
-            title="Sign in with Google"
-            onPress={handleGoogleLogin}
-            loading={loading}
-            style={styles.googleButton}
-          />
+          <GoogleSigninButton onPress={handleGoogleLogin} loading={loading} />
         )}
 
         {loading && (
@@ -281,11 +278,6 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   appleButton: {
-    width: "100%",
-    height: 44,
-    marginVertical: 6,
-  },
-  googleButton: {
     width: "100%",
     height: 44,
     marginVertical: 6,

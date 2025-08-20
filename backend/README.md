@@ -37,6 +37,10 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
+```bash
+pip freeze > requirements.txt
+```
+
 ### 4. Create a `.env` file
 
 ```env
