@@ -3,7 +3,7 @@
     "name": "Habee",
     "slug": "habee",
     "scheme": "habee",
-    "version": "1.2.2",
+    "version": "1.2.3",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -14,7 +14,7 @@
       "backgroundColor": "#f7ce46"
     },
     "ios": {
-      "buildNumber": "1.2.2",
+      "buildNumber": "1.2.3",
       "supportsTablet": true,
       "bundleIdentifier": "com.habeeapp.habee",
       "usesAppleSignIn": true,
@@ -34,7 +34,7 @@
       "edgeToEdgeEnabled": true,
       "permissions": ["POST_NOTIFICATIONS"],
       "package": "com.habeeapp.habee",
-      "versionCode": 4
+      "versionCode": 5
     },
     "web": {
       "favicon": "./assets/favicon.png"

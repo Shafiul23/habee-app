@@ -2,11 +2,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import * as AppleAuthentication from "expo-apple-authentication";
-import * as Google from "expo-auth-session/providers/google";
 import * as WebBrowser from "expo-web-browser";
 import React, { useState } from "react";
 import {
-  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -22,7 +20,6 @@ import { RootStackParamList } from "../../types";
 import PrimaryButton from "../components/PrimaryButton";
 import { useAuth } from "../contexts/AuthContext";
 import { isValidEmail } from "../utils/validation";
-import GoogleSigninButton from "../components/GoogleSigninButton";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -36,10 +33,6 @@ const LoginScreen = () => {
 
   const navigation = useNavigation<NavigationProp>();
   const { login } = useAuth();
-  const [, , promptAsync] = Google.useIdTokenAuthRequest({
-    clientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
-  });
 
   const handleLogin = async () => {
     if (!isValidEmail(email)) {
@@ -111,36 +104,6 @@ const LoginScreen = () => {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    try {
-      setLoading(true);
-      const result = await promptAsync();
-      if (result.type !== "success") {
-        return;
-      }
-      const idToken = result.params?.id_token;
-      if (!idToken) {
-        throw new Error("No token returned");
-      }
-      const res = await api.post("/auth/google", { token: idToken });
-      await login(res.data.access_token);
-      await requestNotificationPermissions();
-      Toast.show({
-        type: "success",
-        text1: "Welcome!",
-      });
-    } catch (err: any) {
-      console.log(err.message);
-      Toast.show({
-        type: "error",
-        text1: "Google Sign-In Failed",
-        text2: err.message || "Something went wrong",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <KeyboardAvoidingView style={styles.container} behavior={"padding"}>
       <View style={styles.card}>
@@ -190,10 +153,6 @@ const LoginScreen = () => {
             style={styles.appleButton}
             onPress={handleAppleLogin}
           />
-        )}
-
-        {Platform.OS === "android" && (
-          <GoogleSigninButton onPress={handleGoogleLogin} loading={loading} />
         )}
 
         {loading && (
