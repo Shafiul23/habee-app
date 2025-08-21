@@ -8,6 +8,7 @@ def app():
     db_fd, db_path = tempfile.mkstemp()
     os.environ["DATABASE_URL"] = f"sqlite:///{db_path}"
     os.environ.setdefault("JWT_SECRET_KEY", "test-secret")
+    os.environ.setdefault("GOOGLE_CLIENT_ID", "test-google-client-id")
     from app import create_app, db
     from app.models.habit import Habit
     app = create_app()
