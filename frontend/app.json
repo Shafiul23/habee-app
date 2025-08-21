@@ -3,18 +3,18 @@
     "name": "Habee",
     "slug": "habee",
     "scheme": "habee",
-    "version": "1.2.1",
+    "version": "1.2.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/splash-icon.png",
-      "resizeMode": "cover",
+      "resizeMode": "contain",
       "backgroundColor": "#f7ce46"
     },
     "ios": {
-      "buildNumber": "1.2.1",
+      "buildNumber": "1.2.2",
       "supportsTablet": true,
       "bundleIdentifier": "com.habeeapp.habee",
       "usesAppleSignIn": true,

@@ -3,7 +3,8 @@ import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 
 const api = axios.create({
-  baseURL: process.env.EXPO_PUBLIC_API_URL,
+  baseURL:
+    process.env.EXPO_PUBLIC_API_URL || "https://habee-app.onrender.com/api",
   withCredentials: true,
 });
 
