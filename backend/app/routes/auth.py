@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from app.models.reset_token import PasswordResetToken
 from sqlalchemy.exc import OperationalError, IntegrityError
 from functools import wraps
+from app.utils.email import send_email_smtp
 
 # Apple JWT verification
 from jwt import PyJWKClient, InvalidTokenError
@@ -231,8 +232,9 @@ def forgot_password():
     email = (data.get("email") or "").strip()
 
     user = User.query.filter_by(email=email).first()
+    message = {"message": "If this email exists, a reset link will be sent."}
     if not user:
-        return jsonify({"message": "If this email exists, a reset link will be sent."}), 200
+        return jsonify(message), 200
 
     token = str(uuid.uuid4())
     expiry = datetime.utcnow() + timedelta(hours=1)
@@ -241,12 +243,29 @@ def forgot_password():
     db.session.add(reset_entry)
     db.session.commit()
 
-    # TODO: Replace this with actual email logic
-    # Deep link to open the mobile app directly for password reset
-    print(f"User email: {email}")
-    print(f"Password reset link: habee://reset-password/{token}")
+    deep_link = f"habee://reset-password/{token}"
+    subject = "Reset your Habee password"
+    text_body = (
+        "Use the following link to reset your Habee password within 1 hour. "
+        "Open this link on a mobile device with the Habee app installed:\n"
+        f"{deep_link}\n\nIf you did not request this, you can ignore this email."
+    )
+    html_body = (
+        "<p>Use the button below to reset your Habee password. This link is valid for 1 hour.</p>"
+        f"<p style=\"text-align:center;\"><a href=\"{deep_link}\" "
+        "style=\"background-color:#4CAF50;color:white;padding:10px 20px;text-decoration:none;\">"
+        "Reset Password</a></p>"
+        "<p>If the button doesn't work, open this link on your mobile device with Habee installed:</p>"
+        f"<p><code>{deep_link}</code></p>"
+        "<p>If you did not request this, please ignore this email.</p>"
+    )
 
-    return jsonify({"message": "Reset link sent to email"}), 200
+    try:
+        send_email_smtp(email, subject, html_body, text_body)
+    except Exception as e:
+        print(f"Failed to send password reset email: {e}")
+
+    return jsonify(message), 200
 
 
 @auth_bp.route("/reset-password/<token>", methods=["POST"])
