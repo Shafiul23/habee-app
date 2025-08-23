@@ -257,6 +257,7 @@ def forgot_password():
         "Reset Password</a></p>"
         "<p>If the button doesn't work, open this link on your mobile device with Habee installed:</p>"
         f"<p><code>{deep_link}</code></p>"
+        "<p>If this still does not work, copy the link below, paste it in a note app, then open the link on the device that has Habee installed.</p>"
         "<p>If you did not request this, please ignore this email.</p>"
     )
 
