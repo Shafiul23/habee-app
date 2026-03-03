@@ -25,7 +25,8 @@ export default function HabitMenu({
   habitId,
   onReminder,
 }: HabitMenuProps) {
-  const [subtitle, setSubtitle] = useState<string>("Off");
+  const [subtitle, setSubtitle] = useState<string>("No reminder set");
+  const [hasReminder, setHasReminder] = useState(false);
 
   useEffect(() => {
     if (habitId === undefined) return;
@@ -35,11 +36,13 @@ export default function HabitMenu({
         const h = time.hour.toString().padStart(2, "0");
         const m = time.minute.toString().padStart(2, "0");
         setSubtitle(`${h}:${m}`);
+        setHasReminder(true);
       } else {
-        setSubtitle("Off");
+        setSubtitle("No reminder set");
+        setHasReminder(false);
       }
     };
-    load();
+    void load();
   }, [habitId]);
 
   return (
@@ -55,7 +58,9 @@ export default function HabitMenu({
         {habitId !== undefined && onReminder && (
           <>
             <PrimaryButton title="Custom Reminder" onPress={onReminder} />
-            <Text style={styles.reminderSubtitle}>{subtitle}</Text>
+            <Text style={styles.reminderSubtitle}>
+              {hasReminder ? `Reminder set for: ${subtitle}` : subtitle}
+            </Text>
           </>
         )}
         <PrimaryButton

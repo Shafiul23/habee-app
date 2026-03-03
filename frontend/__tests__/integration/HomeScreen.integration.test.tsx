@@ -3,7 +3,12 @@ import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import React from "react";
 
 import HomeScreen from "../../src/screens/HomeScreen";
-import { getHabitSummary, getHabits, logHabit } from "../../lib/api";
+import { getHabitSummary, getHabits, logHabit, undoHabit } from "../../lib/api";
+import {
+  pauseHabitReminderForDate,
+  resumeHabitReminderForDate,
+  resumePausedHabitRemindersIfNeeded,
+} from "../../lib/habitReminders";
 
 const mockNavigate = jest.fn();
 
@@ -27,6 +32,9 @@ jest.mock("../../lib/api", () => ({
 jest.mock("../../lib/habitReminders", () => ({
   cancelHabitReminder: jest.fn(),
   removeHabitReminder: jest.fn(),
+  pauseHabitReminderForDate: jest.fn(),
+  resumeHabitReminderForDate: jest.fn(),
+  resumePausedHabitRemindersIfNeeded: jest.fn(),
 }));
 
 jest.mock("react-native-toast-message", () => ({
@@ -97,6 +105,9 @@ describe("HomeScreen integration", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (AsyncStorage.getItem as jest.Mock).mockResolvedValue("true");
+    (resumePausedHabitRemindersIfNeeded as jest.Mock).mockResolvedValue(undefined);
+    (pauseHabitReminderForDate as jest.Mock).mockResolvedValue(true);
+    (resumeHabitReminderForDate as jest.Mock).mockResolvedValue(true);
   });
 
   it("loads habits and toggles completion", async () => {
@@ -129,6 +140,55 @@ describe("HomeScreen integration", () => {
     fireEvent.press(screen.getByText("Read"));
     await waitFor(() => {
       expect(logHabit).toHaveBeenCalledWith(1, expect.any(String));
+      expect(pauseHabitReminderForDate).toHaveBeenCalledWith(
+        1,
+        expect.any(String),
+        expect.objectContaining({
+          habitName: "Read",
+          frequency: "DAILY",
+        })
+      );
+    });
+  });
+
+  it("reactivates reminder when un-completing a habit on the same day", async () => {
+    (getHabitSummary as jest.Mock).mockResolvedValueOnce([
+      {
+        id: 1,
+        name: "Read",
+        start_date: "2026-03-01",
+        frequency: "DAILY",
+        days_of_week: null,
+        completed: true,
+      },
+    ]);
+    (getHabits as jest.Mock).mockResolvedValueOnce([
+      {
+        id: 1,
+        name: "Read",
+        start_date: "2026-03-01",
+        frequency: "DAILY",
+        days_of_week: null,
+      },
+    ]);
+
+    const screen = render(<HomeScreen />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Read")).toBeTruthy();
+    });
+
+    fireEvent.press(screen.getByText("Read"));
+    await waitFor(() => {
+      expect(undoHabit).toHaveBeenCalledWith(1, expect.any(String));
+      expect(resumeHabitReminderForDate).toHaveBeenCalledWith(
+        1,
+        expect.any(String),
+        expect.objectContaining({
+          habitName: "Read",
+          frequency: "DAILY",
+        })
+      );
     });
   });
 

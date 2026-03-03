@@ -30,6 +30,7 @@ jest.mock("../../lib/notifications", () => ({
 
 jest.mock("../../lib/habitReminders", () => ({
   cancelHabitReminder: jest.fn(),
+  getHabitReminderPausedDate: jest.fn(),
   getHabitReminderTime: jest.fn(),
   removeHabitReminder: jest.fn(),
   saveHabitReminder: jest.fn(),
