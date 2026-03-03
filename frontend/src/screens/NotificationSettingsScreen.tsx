@@ -3,6 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as Notifications from "expo-notifications";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { format } from "date-fns";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Alert,
@@ -22,6 +23,7 @@ import {
 } from "../../lib/notifications";
 import {
   cancelHabitReminder,
+  getHabitReminderPausedDate,
   getHabitReminderTime,
   removeHabitReminder,
   saveHabitReminder,
@@ -70,6 +72,7 @@ export default function NotificationSettingsScreen() {
     habitName: string;
     time: ReminderTime;
     enabled: boolean;
+    pausedForToday: boolean;
     frequency: "DAILY" | "WEEKLY";
     daysOfWeek?: number[];
   };
@@ -216,6 +219,7 @@ export default function NotificationSettingsScreen() {
   useFocusEffect(
     useCallback(() => {
       const loadCustomReminders = async () => {
+        const today = format(new Date(), "yyyy-MM-dd");
         const keys = await AsyncStorage.getAllKeys();
         const reminderKeys = keys.filter((k) =>
           k.startsWith("habitReminderTime:")
@@ -234,7 +238,10 @@ export default function NotificationSettingsScreen() {
         const items: CustomReminder[] = [];
         for (const key of reminderKeys) {
           const id = parseInt(key.split(":")[1], 10);
-          const time = await getHabitReminderTime(id);
+          const [time, pausedDate] = await Promise.all([
+            getHabitReminderTime(id),
+            getHabitReminderPausedDate(id),
+          ]);
           const info = habitMap.get(id);
           if (time && info) {
             items.push({
@@ -242,6 +249,7 @@ export default function NotificationSettingsScreen() {
               habitName: info.name,
               time,
               enabled: true,
+              pausedForToday: pausedDate === today,
               frequency: info.frequency,
               daysOfWeek: info.days,
             });
@@ -273,7 +281,9 @@ export default function NotificationSettingsScreen() {
   ) => {
     setCustomReminders((prev) =>
       prev.map((r) =>
-        r.habitId === reminder.habitId ? { ...r, enabled: val } : r
+        r.habitId === reminder.habitId
+          ? { ...r, enabled: val, pausedForToday: val ? false : r.pausedForToday }
+          : r
       )
     );
     if (val) {
@@ -385,6 +395,7 @@ export default function NotificationSettingsScreen() {
                 <Text style={styles.habitName}>{r.habitName}</Text>
                 <Text style={styles.reminderTime}>
                   {formatReminderTime(r.time)}
+                  {r.pausedForToday ? " · Paused for today" : ""}
                 </Text>
               </View>
               <Switch

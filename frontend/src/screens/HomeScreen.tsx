@@ -35,7 +35,10 @@ import HabitReminderModal from "../components/HabitReminderModal";
 import UpcomingHabitItem from "../components/UpcomingHabitItem";
 import {
   cancelHabitReminder,
+  pauseHabitReminderForDate,
   removeHabitReminder,
+  resumeHabitReminderForDate,
+  resumePausedHabitRemindersIfNeeded,
 } from "../../lib/habitReminders";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import InfoTooltip from "../components/InfoTooltip";
@@ -110,21 +113,48 @@ export default function Home() {
 
   useFocusEffect(
     useCallback(() => {
-      loadHabits(true, date);
+      void (async () => {
+        await resumePausedHabitRemindersIfNeeded(
+          format(new Date(), "yyyy-MM-dd")
+        );
+        await loadHabits(true, date);
+      })();
     }, [date])
   );
 
   const handleToggleHabit = async (id: number, completed = false) => {
     try {
+      const formattedDate = format(date, "yyyy-MM-dd");
       if (completed) {
-        await undoHabit(id, format(date, "yyyy-MM-dd"));
+        await undoHabit(id, formattedDate);
       } else {
-        await logHabit(id, format(date, "yyyy-MM-dd"));
+        await logHabit(id, formattedDate);
       }
 
       setHabits((prev) =>
         prev.map((h) => (h.id === id ? { ...h, completed: !h.completed } : h))
       );
+
+      if (!isToday(date)) return;
+
+      const habit = habits.find((h) => h.id === id);
+      if (!habit) return;
+
+      const reminderConfig = {
+        habitName: habit.name,
+        frequency: habit.frequency,
+        daysOfWeek: habit.days_of_week || undefined,
+      };
+
+      try {
+        if (completed) {
+          await resumeHabitReminderForDate(id, formattedDate, reminderConfig);
+        } else {
+          await pauseHabitReminderForDate(id, formattedDate, reminderConfig);
+        }
+      } catch {
+        // Do not block habit completion if reminder sync fails.
+      }
     } catch (err: any) {
       Toast.show({
         type: "error",
