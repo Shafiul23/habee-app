@@ -2,9 +2,16 @@
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 
+const apiBaseUrl = process.env.EXPO_PUBLIC_API_URL;
+
+if (!apiBaseUrl) {
+  throw new Error(
+    "EXPO_PUBLIC_API_URL is not set. Use a start script that sets it or define it in frontend/.env."
+  );
+}
+
 const api = axios.create({
-  baseURL:
-    process.env.EXPO_PUBLIC_API_URL || "https://habee-app.onrender.com/api",
+  baseURL: apiBaseUrl,
   withCredentials: true,
 });
 

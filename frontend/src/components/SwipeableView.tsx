@@ -5,13 +5,9 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
-  useAnimatedGestureHandler,
   runOnJS,
 } from "react-native-reanimated";
-import {
-  PanGestureHandler,
-  PanGestureHandlerGestureEvent,
-} from "react-native-gesture-handler";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.25;
@@ -28,37 +24,34 @@ export default function SwipeableView({
   onSwipeRight,
 }: Props) {
   const translateX = useSharedValue(0);
+  const startX = useSharedValue(0);
 
-  const gestureHandler = useAnimatedGestureHandler<
-    PanGestureHandlerGestureEvent,
-    { startX: number }
-  >({
-    onStart: (_, ctx) => {
-      ctx.startX = translateX.value;
-    },
-    onActive: (event, ctx) => {
-      translateX.value = ctx.startX + event.translationX;
-    },
-    onEnd: (event) => {
+  const panGesture = Gesture.Pan()
+    .onBegin(() => {
+      startX.value = translateX.value;
+    })
+    .onUpdate((event) => {
+      translateX.value = startX.value + event.translationX;
+    })
+    .onEnd((event) => {
       if (event.translationX < -SWIPE_THRESHOLD) {
         runOnJS(onSwipeLeft)();
       } else if (event.translationX > SWIPE_THRESHOLD) {
         runOnJS(onSwipeRight)();
       }
       translateX.value = withTiming(0);
-    },
-  });
+    });
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.value }],
   }));
 
   return (
-    <PanGestureHandler onGestureEvent={gestureHandler}>
+    <GestureDetector gesture={panGesture}>
       <Animated.View style={[styles.container, animatedStyle]}>
         {children}
       </Animated.View>
-    </PanGestureHandler>
+    </GestureDetector>
   );
 }
 
