@@ -35,6 +35,7 @@ source venv/bin/activate
 
 ```bash
 pip install -r requirements.txt
+pip install -r requirements-dev.txt
 ```
 
 ```bash
@@ -111,3 +112,13 @@ migrations/           # Flask-Migrate tracking
 
 - If you renamed the project folder, recreate your virtualenv (`venv`) to avoid path issues.
 - Make sure PostgreSQL is running locally or adjust `DATABASE_URL` to point to your remote DB.
+
+## 🧪 Testing
+
+```bash
+pytest -q
+pytest -m "unit or integration" -q
+pytest -m contract -q
+pytest -m postgres -q
+pytest --cov=app --cov-report=term-missing --cov-fail-under=85
+```

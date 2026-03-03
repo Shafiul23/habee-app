@@ -7,9 +7,10 @@ interface Props {
   status?: "complete" | "missed" | "unlogged";
   size: number;
   paused?: boolean;
+  testID?: string;
 }
 
-export default function GridCell({ applicable, status, size, paused }: Props) {
+export default function GridCell({ applicable, status, size, paused, testID }: Props) {
   let bgColor = "#e5e5e5";
 
   if (paused) {
@@ -23,7 +24,10 @@ export default function GridCell({ applicable, status, size, paused }: Props) {
   }
 
   return (
-    <View style={[styles.cell, { backgroundColor: bgColor, width: size, height: size }]} />
+    <View
+      testID={testID}
+      style={[styles.cell, { backgroundColor: bgColor, width: size, height: size }]}
+    />
   );
 }
 

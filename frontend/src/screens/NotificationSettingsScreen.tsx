@@ -303,7 +303,11 @@ export default function NotificationSettingsScreen() {
       )}
       <View style={styles.row}>
         <Text style={styles.title}>Daily Reminder</Text>
-        <Switch value={reminderEnabled} onValueChange={handleToggleReminder} />
+        <Switch
+          testID="daily-reminder-switch"
+          value={reminderEnabled}
+          onValueChange={handleToggleReminder}
+        />
       </View>
 
       {reminderEnabled && (

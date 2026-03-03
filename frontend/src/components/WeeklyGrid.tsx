@@ -129,6 +129,7 @@ export default function WeeklyGrid({
                       return (
                         <GridCell
                           key={`${habit.id}-${iso}`}
+                          testID={`grid-cell-${habit.id}-${iso}`}
                           applicable={applicable}
                           status={status}
                           paused={paused}

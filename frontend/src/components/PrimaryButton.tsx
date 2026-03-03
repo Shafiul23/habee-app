@@ -15,6 +15,7 @@ type Props = {
   textStyle?: TextStyle;
   disabled?: boolean;
   loading?: boolean;
+  testID?: string;
 };
 
 export default function PrimaryButton({
@@ -24,9 +25,11 @@ export default function PrimaryButton({
   textStyle,
   disabled = false,
   loading = false,
+  testID,
 }: Props) {
   return (
     <Pressable
+      testID={testID}
       onPress={onPress}
       disabled={disabled || loading}
       style={[

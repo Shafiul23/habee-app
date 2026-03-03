@@ -246,6 +246,7 @@ export default function Home() {
                   Failed to load habits. Please try again.
                 </Text>
                 <PrimaryButton
+                  testID="home-retry-button"
                   title="Retry"
                   onPress={() => loadHabits(true)}
                   disabled={loading}
@@ -298,6 +299,7 @@ export default function Home() {
       </SwipeableDayView>
 
       <Pressable
+        testID="home-create-fab"
         style={styles.fab}
         onPress={() => navigation.navigate("CreateHabit")}
       >

@@ -2,6 +2,7 @@ import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import CreateHabitScreen from '../src/screens/CreateHabitScreen';
 import { createHabit } from '../lib/api';
+import { AxiosError } from 'axios';
 
 const mockGoBack = jest.fn();
 
@@ -62,6 +63,33 @@ describe('CreateHabitScreen', () => {
         []
       );
       expect(mockGoBack).toHaveBeenCalled();
+    });
+  });
+
+  it('shows duplicate active-name error from API', async () => {
+    (createHabit as jest.Mock).mockRejectedValueOnce({
+      response: {
+        status: 409,
+        data: { error: 'duplicate_name_active' },
+      },
+    } as Partial<AxiosError>);
+
+    const { getByText, getByPlaceholderText, queryByText } = render(
+      <CreateHabitScreen />
+    );
+
+    fireEvent.changeText(
+      getByPlaceholderText('e.g. Read 30 mins, Track calories'),
+      'Read'
+    );
+    fireEvent.press(getByText('Create habit'));
+
+    await waitFor(() => {
+      expect(
+        queryByText(
+          "You already have an active habit named 'Read'. Choose a different name."
+        )
+      ).toBeTruthy();
     });
   });
 });

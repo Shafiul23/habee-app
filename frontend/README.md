@@ -107,10 +107,34 @@ eas submit --platform ios --path ./your-app.ipa
 
 ## 🧪 Testing
 
-Run the frontend unit tests with:
+Run all frontend Jest tests:
 
 ```bash
 npm test
+```
+
+Run unit tests only:
+
+```bash
+npm run test:unit
+```
+
+Run integration tests only:
+
+```bash
+npm run test:integration
+```
+
+Run iOS E2E smoke tests (Detox):
+
+```bash
+npm run test:e2e:ios
+```
+
+Run iOS visual regression tests:
+
+```bash
+npm run test:visual
 ```
 
 ---

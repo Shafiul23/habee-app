@@ -83,6 +83,7 @@ export default function CalendarGrid({
             return (
               <TouchableOpacity
                 key={iso}
+                testID={`calendar-cell-${iso}`}
                 style={[styles.cell, { backgroundColor: bgColor }]}
                 onPress={() => onDayPress?.(day)}
               >
