@@ -63,7 +63,10 @@ export default function ProgressDoughnut({
 const styles = StyleSheet.create({
   center: {
     position: "absolute",
-    inset: 0,
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
     alignItems: "center",
     justifyContent: "center",
   },
