@@ -35,11 +35,11 @@ describe("SettingsScreen", () => {
 
   it("toggles about section", () => {
     const { getByText, queryByText } = render(<SettingsScreen />);
-    expect(queryByText(/Habee is built by a solo developer/i)).toBeNull();
+    expect(queryByText(/HexaHabit is built by a solo developer/i)).toBeNull();
     fireEvent.press(getByText("About"));
-    expect(queryByText(/Habee is built by a solo developer/i)).not.toBeNull();
+    expect(queryByText(/HexaHabit is built by a solo developer/i)).not.toBeNull();
     fireEvent.press(getByText("About"));
-    expect(queryByText(/Habee is built by a solo developer/i)).toBeNull();
+    expect(queryByText(/HexaHabit is built by a solo developer/i)).toBeNull();
   });
 
   it("shows confirmation when deleting account", () => {

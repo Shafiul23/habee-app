@@ -104,7 +104,7 @@ const LoginScreen = () => {
   return (
     <KeyboardAvoidingView style={styles.container} behavior={"padding"}>
       <View style={styles.card}>
-        <Text style={styles.title}>Habee</Text>
+        <Text style={styles.title}>HexaHabit</Text>
 
         <TextInput
           style={styles.input}

@@ -1,5 +1,5 @@
 /* global device, element, by */
-describe("Habee E2E smoke", () => {
+describe("HexaHabit E2E smoke", () => {
   beforeAll(async () => {
     await device.launchApp({ newInstance: true });
   });

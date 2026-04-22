@@ -93,7 +93,7 @@ export default function SettingsScreen() {
             navigation.navigate("NotificationSettings");
           }}
         />
-        <PrimaryButton title="Support Habee" onPress={handleSupport} />
+        <PrimaryButton title="Support HexaHabit" onPress={handleSupport} />
         <View>
           <Pressable
             style={styles.aboutButton}
@@ -119,9 +119,9 @@ export default function SettingsScreen() {
           {showAbout && (
             <View style={styles.aboutCard}>
               <Text style={styles.aboutBody}>
-                {`Habee is built by a solo developer to replace clunky spreadsheet tracking with a clean, intuitive habit-tracking experience. Other apps often feel cluttered, overly complex, hidden behind paywalls, or filled with ads.
+                {`HexaHabit is built by a solo developer to replace clunky spreadsheet tracking with a clean, intuitive habit-tracking experience. Other apps often feel cluttered, overly complex, hidden behind paywalls, or filled with ads.
 
-Habee focuses on simplicity, visual progress, and an ad-free experience. Supporting Habee helps cover ongoing running costs — from hosting and databases to keeping the app free of ads and unnecessary barriers.`}
+HexaHabit focuses on simplicity, visual progress, and an ad-free experience. Supporting HexaHabit helps cover ongoing running costs — from hosting and databases to keeping the app free of ads and unnecessary barriers.`}
               </Text>
             </View>
           )}

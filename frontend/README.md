@@ -1,6 +1,6 @@
-# 🐝 Habee Frontend – React Native App (Expo)
+# HexaHabit Frontend - React Native App (Expo)
 
-This is the mobile frontend for **Habee**, a sleek and purposeful habit-tracking app inspired by the focus and rhythm of worker bees. Built with **React Native** using **Expo**, it allows users to log, track, and visualize daily habits with ease.
+This is the mobile frontend for **HexaHabit**, a sleek and purposeful habit-tracking app. Built with **React Native** using **Expo**, it allows users to log, track, and visualize daily habits with ease.
 
 ---
 

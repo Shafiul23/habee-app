@@ -1,8 +1,8 @@
-# Habee – Busy Building Better Habits 🐝
+# HexaHabit - Habit Tracking App
 
-**Habee** is a playful and powerful habit-tracking app that helps users build consistency and stay accountable. Inspired by the focus and discipline of worker bees, Habee makes tracking daily habits simple and satisfying.
+**HexaHabit** is a habit-tracking app that helps users build consistency and stay accountable. HexaHabit makes tracking daily habits simple and satisfying.
 
-Whether you're tracking fitness, mindfulness, or productivity, Habee keeps you buzzing toward your goals.
+Whether you're tracking fitness, mindfulness, or productivity, HexaHabit helps you stay focused on your goals.
 
 ---
 

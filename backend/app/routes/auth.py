@@ -244,20 +244,20 @@ def forgot_password():
     db.session.commit()
 
     deep_link = f"habee://reset-password/{token}"
-    subject = "Reset your Habee password"
+    subject = "Reset your HexaHabit password"
     text_body = (
-        "Use the following link to reset your Habee password within 1 hour. "
-        "Open this link on a mobile device with the Habee app installed:\n"
+        "Use the following link to reset your HexaHabit password within 1 hour. "
+        "Open this link on a mobile device with the HexaHabit app installed:\n"
         f"{deep_link}\n\nIf you did not request this, you can ignore this email."
     )
     html_body = (
-        "<p>Use the button below to reset your Habee password. This link is valid for 1 hour.</p>"
+        "<p>Use the button below to reset your HexaHabit password. This link is valid for 1 hour.</p>"
         f"<p style=\"text-align:center;\"><a href=\"{deep_link}\" "
         "style=\"background-color:#4CAF50;color:white;padding:10px 20px;text-decoration:none;\">"
         "Reset Password</a></p>"
-        "<p>If the button doesn't work, open this link on your mobile device with Habee installed:</p>"
+        "<p>If the button doesn't work, open this link on your mobile device with HexaHabit installed:</p>"
         f"<p><code>{deep_link}</code></p>"
-        "<p>If this still does not work, copy the link below, paste it in a note app, then open the link on the device that has Habee installed.</p>"
+        "<p>If this still does not work, copy the link below, paste it in a note app, then open the link on the device that has HexaHabit installed.</p>"
         "<p>If you did not request this, please ignore this email.</p>"
     )
 

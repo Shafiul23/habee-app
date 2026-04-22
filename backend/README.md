@@ -1,6 +1,6 @@
-# 🐝 Habee Backend – Flask API
+# HexaHabit Backend - Flask API
 
-This is the backend for **Habee**, a mobile habit-tracking app built with purpose and polish. The API is powered by **Flask**, with **JWT authentication**, **PostgreSQL** persistence, and support for scalable, real-time habit tracking features.
+This is the backend for **HexaHabit**, a mobile habit-tracking app built with purpose and polish. The API is powered by **Flask**, with **JWT authentication**, **PostgreSQL** persistence, and support for scalable, real-time habit tracking features.
 
 ---
 
