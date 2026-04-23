@@ -4,7 +4,6 @@ import Constants from "expo-constants";
 import React, { useState } from "react";
 import {
   Alert,
-  Linking,
   ScrollView,
   StyleSheet,
   Text,
@@ -33,20 +32,6 @@ export default function SettingsScreen() {
         type: "error",
         text1: "Error logging out",
         text2: err.message || "Something went wrong while logging out.",
-      });
-    }
-  };
-
-  const handleSupport = async () => {
-    const url = "https://habee-app.com";
-    const supported = await Linking.canOpenURL(url);
-
-    if (supported) {
-      await Linking.openURL(url);
-    } else {
-      Toast.show({
-        type: "error",
-        text1: "Unable to open the support page.",
       });
     }
   };
@@ -93,7 +78,6 @@ export default function SettingsScreen() {
             navigation.navigate("NotificationSettings");
           }}
         />
-        <PrimaryButton title="Support HexaHabit" onPress={handleSupport} />
         <View>
           <Pressable
             style={styles.aboutButton}
@@ -119,9 +103,9 @@ export default function SettingsScreen() {
           {showAbout && (
             <View style={styles.aboutCard}>
               <Text style={styles.aboutBody}>
-                {`HexaHabit is built by a solo developer to replace clunky spreadsheet tracking with a clean, intuitive habit-tracking experience. Other apps often feel cluttered, overly complex, hidden behind paywalls, or filled with ads.
+                {`HexaHabit is an independent habit-tracking app built by a solo developer who wanted a cleaner alternative to spreadsheets and bloated productivity apps.
 
-HexaHabit focuses on simplicity, visual progress, and an ad-free experience. Supporting HexaHabit helps cover ongoing running costs — from hosting and databases to keeping the app free of ads and unnecessary barriers.`}
+The project is focused on simple habit logging, clear progress tracking, and an experience that stays easy to use every day without clutter or unnecessary friction.`}
               </Text>
             </View>
           )}
